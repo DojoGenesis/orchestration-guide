@@ -1,0 +1,1672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Pattern Selector — Orchestration Guide</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    /* ── CSS custom properties ── */
+    :root {
+      --bg:           #0d1117;
+      --bg-secondary: #161b22;
+      --bg-tertiary:  #21262d;
+      --border:       #30363d;
+      --text:         #c9d1d9;
+      --text-muted:   #8b949e;
+      --text-subtle:  #6e7681;
+      --accent:       #58a6ff;
+      --accent-dim:   #1f6feb;
+      --success:      #238636;
+      --success-text: #3fb950;
+      --warning:      #da3633;
+      --warning-text: #f85149;
+      --warn-soft:    #e3b341;
+      --purple:       #bc8cff;
+      --teal:         #39d353;
+      --font-mono:    'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+      --radius:       6px;
+      --content-max:  900px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; font-size: 15px; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-mono);
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    /* ── Top nav bar ── */
+    header.topnav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0;
+      height: 44px;
+      padding: 0 1.5rem;
+    }
+
+    .nav-brand {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-decoration: none;
+      letter-spacing: 0.05em;
+      margin-right: 1.5rem;
+      white-space: nowrap;
+    }
+    .nav-brand:hover { color: var(--accent); }
+
+    .nav-sep {
+      color: var(--text-subtle);
+      margin: 0 0.4rem;
+      font-size: 0.7rem;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 0;
+      list-style: none;
+      overflow-x: auto;
+    }
+
+    .nav-links a {
+      display: flex;
+      align-items: center;
+      height: 44px;
+      padding: 0 0.9rem;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      border-bottom: 2px solid transparent;
+      transition: color 0.15s, border-color 0.15s;
+      white-space: nowrap;
+    }
+
+    .nav-links a:hover { color: var(--accent); }
+    .nav-links a.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    /* ── Main layout ── */
+    main {
+      max-width: var(--content-max);
+      margin: 0 auto;
+      padding: 2.5rem 2rem 5rem;
+    }
+
+    /* ── Page hero ── */
+    .page-hero {
+      padding: 2.5rem 0 2rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 3rem;
+    }
+
+    .page-eyebrow {
+      font-size: 0.68rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+    }
+
+    .page-hero h1 {
+      font-size: 1.9rem;
+      font-weight: 700;
+      color: #e6edf3;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.6rem;
+    }
+
+    .page-hero .subtitle {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      font-weight: 300;
+      max-width: 600px;
+    }
+
+    /* ── Section headings ── */
+    .section-heading {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #e6edf3;
+      margin-bottom: 0.4rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-heading .snum {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.5rem;
+      height: 1.5rem;
+      border-radius: 50%;
+      background: var(--accent-dim);
+      color: #e6edf3;
+      font-size: 0.72rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .section-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 1.75rem;
+    }
+
+    section.content-section {
+      margin-bottom: 4rem;
+    }
+
+    /* ── Pattern cards grid ── */
+    .pattern-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+      gap: 1rem;
+    }
+
+    @media (max-width: 700px) {
+      .pattern-grid { grid-template-columns: 1fr; }
+    }
+
+    .pattern-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.1rem 1.25rem;
+      transition: border-color 0.15s;
+    }
+
+    /* category colors */
+    .pattern-card[data-cat="sequential"]  { border-left-color: var(--accent); }
+    .pattern-card[data-cat="parallel"]    { border-left-color: var(--teal); }
+    .pattern-card[data-cat="iterative"]   { border-left-color: var(--purple); }
+    .pattern-card[data-cat="resilience"]  { border-left-color: var(--warn-soft); }
+    .pattern-card[data-cat="governance"]  { border-left-color: var(--success-text); }
+    .pattern-card[data-cat="reactive"]    { border-left-color: #f78166; }
+    .pattern-card[data-cat="meta"]        { border-left-color: var(--text-muted); }
+
+    .pattern-card-header {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .pattern-num {
+      font-size: 0.65rem;
+      color: var(--text-subtle);
+      min-width: 1.4rem;
+    }
+
+    .pattern-icon {
+      font-size: 1rem;
+      line-height: 1;
+    }
+
+    .pattern-name {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: #e6edf3;
+    }
+
+    .pattern-agents {
+      margin-left: auto;
+      font-size: 0.65rem;
+      color: var(--text-subtle);
+      background: var(--bg-tertiary);
+      padding: 0.15rem 0.45rem;
+      border-radius: 99px;
+      white-space: nowrap;
+    }
+
+    .pattern-topology {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-bottom: 0.65rem;
+      font-style: italic;
+    }
+
+    .pattern-body {
+      font-size: 0.78rem;
+      color: var(--text);
+      display: grid;
+      gap: 0.5rem;
+    }
+
+    .pattern-body ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .pattern-body ul li::before {
+      content: '▸ ';
+      color: var(--text-subtle);
+    }
+
+    .pattern-label {
+      font-size: 0.63rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+      margin-bottom: 0.15rem;
+    }
+
+    .failure-text { color: var(--warning-text); }
+    .example-text {
+      font-style: italic;
+      color: var(--text-muted);
+      padding: 0.4rem 0.6rem;
+      background: var(--bg-tertiary);
+      border-radius: var(--radius);
+      border-left: 2px solid var(--border);
+    }
+
+    /* ── Questionnaire ── */
+    .questionnaire {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.75rem;
+      margin-bottom: 2rem;
+    }
+
+    .q-block {
+      margin-bottom: 1.5rem;
+    }
+
+    .q-block:last-of-type { margin-bottom: 0; }
+
+    .q-label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #e6edf3;
+      margin-bottom: 0.7rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .q-label .q-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.3rem;
+      height: 1.3rem;
+      border-radius: 50%;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .q-options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+
+    .q-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.55rem;
+      cursor: pointer;
+      padding: 0.5rem 0.75rem;
+      border-radius: var(--radius);
+      border: 1px solid transparent;
+      transition: background 0.12s, border-color 0.12s;
+    }
+
+    .q-option:hover {
+      background: rgba(88, 166, 255, 0.05);
+      border-color: rgba(88, 166, 255, 0.2);
+    }
+
+    .q-option input[type="radio"] {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      min-width: 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 50%;
+      background: var(--bg-tertiary);
+      cursor: pointer;
+      margin-top: 0.15rem;
+      transition: border-color 0.12s, background 0.12s;
+      position: relative;
+    }
+
+    .q-option input[type="radio"]:checked {
+      border-color: var(--accent);
+      background: var(--accent-dim);
+      box-shadow: inset 0 0 0 3px var(--bg-tertiary);
+    }
+
+    .q-option.selected {
+      background: rgba(88, 166, 255, 0.07);
+      border-color: rgba(88, 166, 255, 0.25);
+    }
+
+    .q-option-text {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .q-option.selected .q-option-text { color: var(--text); }
+
+    /* ── Result panel ── */
+    .result-panel {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      min-height: 80px;
+    }
+
+    .result-empty {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      font-size: 0.78rem;
+      color: var(--text-subtle);
+      font-style: italic;
+    }
+
+    .result-content { display: none; }
+    .result-content.visible { display: block; }
+
+    .result-header {
+      padding: 1rem 1.25rem 0.85rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-tertiary);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .result-icon { font-size: 1.3rem; }
+
+    .result-title-group { flex: 1; }
+
+    .result-label {
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.2rem;
+    }
+
+    .result-name {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #e6edf3;
+    }
+
+    .result-body { padding: 1.1rem 1.25rem; }
+
+    .result-desc {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+      line-height: 1.6;
+    }
+
+    .result-why {
+      margin-bottom: 1.1rem;
+    }
+
+    .result-why-title {
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+      margin-bottom: 0.4rem;
+    }
+
+    .result-why-list {
+      list-style: none;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .result-why-list li {
+      font-size: 0.78rem;
+      color: var(--success-text);
+      padding: 0.3rem 0.6rem;
+      background: rgba(63, 185, 80, 0.07);
+      border-radius: var(--radius);
+      border-left: 2px solid var(--success);
+    }
+
+    .result-why-list li::before { content: '✓ '; }
+
+    /* runner-up */
+    .runner-up {
+      margin-top: 0.75rem;
+      padding: 0.6rem 0.9rem;
+      background: var(--bg-tertiary);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .runner-up strong { color: var(--warn-soft); }
+
+    /* ── Dispatch templates ── */
+    .template-block {
+      margin-bottom: 1.5rem;
+    }
+
+    .template-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.6rem 1rem;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-bottom: none;
+      border-radius: var(--radius) var(--radius) 0 0;
+      gap: 0.5rem;
+    }
+
+    .template-title {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #e6edf3;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .template-title .t-icon { font-size: 0.9rem; }
+
+    .copy-btn {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      padding: 0.25rem 0.6rem;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s, background 0.15s;
+      flex-shrink: 0;
+    }
+
+    .copy-btn:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+      background: rgba(88, 166, 255, 0.07);
+    }
+
+    .copy-btn.copied {
+      color: var(--success-text);
+      border-color: var(--success);
+    }
+
+    .template-code {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 0 0 var(--radius) var(--radius);
+      padding: 1rem 1.1rem;
+      font-size: 0.75rem;
+      line-height: 1.65;
+      color: var(--text);
+      overflow-x: auto;
+      white-space: pre;
+      tab-size: 2;
+    }
+
+    .template-code .cm  { color: var(--text-subtle); }   /* comment */
+    .template-code .kw  { color: var(--accent); }         /* keyword / heading */
+    .template-code .val { color: var(--success-text); }   /* value */
+    .template-code .ph  { color: var(--warn-soft); }      /* placeholder */
+    .template-code .em  { color: var(--purple); }         /* emphasis */
+
+    /* ── Callout ── */
+    .callout {
+      padding: 0.8rem 1rem;
+      border-radius: var(--radius);
+      border-left: 3px solid var(--border);
+      font-size: 0.78rem;
+      line-height: 1.6;
+      margin-bottom: 1.25rem;
+    }
+
+    .callout.info {
+      background: rgba(88, 166, 255, 0.07);
+      border-left-color: var(--accent);
+      color: var(--text-muted);
+    }
+
+    .callout.warn {
+      background: rgba(227, 179, 65, 0.07);
+      border-left-color: var(--warn-soft);
+      color: var(--text-muted);
+    }
+
+    /* ── Print styles ── */
+    @media print {
+      header.topnav { display: none; }
+      .questionnaire, .result-panel, .print-hide { display: none !important; }
+      .result-content { display: block !important; }
+      .pattern-grid { grid-template-columns: 1fr 1fr; }
+      body { background: white; color: black; font-size: 11px; }
+      .pattern-card, .template-code, .template-header { border-color: #ccc; }
+      .template-code { white-space: pre-wrap; }
+      a { color: inherit; }
+    }
+
+    @media (max-width: 600px) {
+      main { padding: 1.5rem 1rem 4rem; }
+      .page-hero h1 { font-size: 1.45rem; }
+      header.topnav { padding: 0 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Top nav bar ── -->
+<header class="topnav">
+  <a href="index.html" class="nav-brand">Orchestration Guide</a>
+  <span class="nav-sep">/</span>
+  <nav>
+    <ul class="nav-links">
+      <li><a href="index.html">Overview</a></li>
+      <li><a href="patterns.html" class="active">Pattern Selector</a></li>
+    </ul>
+  </nav>
+</header>
+
+<!-- ── Main ── -->
+<main>
+
+  <!-- Page hero -->
+  <div class="page-hero">
+    <div class="page-eyebrow">Interactive Tool</div>
+    <h1>Pattern Selector</h1>
+    <p class="subtitle">Answer 5 questions about your task. Get the recommended orchestration pattern and a copy-paste dispatch plan.</p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       SECTION 2 — Interactive Selector (shown first for UX)
+  ═══════════════════════════════════════════════ -->
+  <section class="content-section print-hide">
+    <div class="section-heading"><span class="snum">1</span> Pattern Selector</div>
+    <p class="section-desc">Select one answer per question. The recommendation updates live.</p>
+
+    <div class="questionnaire">
+
+      <div class="q-block" id="q1-block">
+        <div class="q-label"><span class="q-num">1</span> How do your tasks relate to each other?</div>
+        <div class="q-options" role="radiogroup" aria-labelledby="q1-block">
+          <label class="q-option" id="q1-a">
+            <input type="radio" name="q1" value="pipeline">
+            <span class="q-option-text">They must run in sequence — output of one feeds the next</span>
+          </label>
+          <label class="q-option" id="q1-b">
+            <input type="radio" name="q1" value="mapreduce">
+            <span class="q-option-text">They're all independent — same operation on different inputs</span>
+          </label>
+          <label class="q-option" id="q1-c">
+            <input type="radio" name="q1" value="hierarchical">
+            <span class="q-option-text">They're independent but different operations — distinct domains</span>
+          </label>
+          <label class="q-option" id="q1-d">
+            <input type="radio" name="q1" value="gencrit">
+            <span class="q-option-text">They need to iterate and improve — revision cycles</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="q-block" id="q2-block">
+        <div class="q-label"><span class="q-num">2</span> How many agents do you need?</div>
+        <div class="q-options" role="radiogroup" aria-labelledby="q2-block">
+          <label class="q-option" id="q2-a">
+            <input type="radio" name="q2" value="gencrit_adv">
+            <span class="q-option-text">2 — one does, one reviews</span>
+          </label>
+          <label class="q-option" id="q2-b">
+            <input type="radio" name="q2" value="swarm_hier">
+            <span class="q-option-text">3–5 — parallel workers</span>
+          </label>
+          <label class="q-option" id="q2-c">
+            <input type="radio" name="q2" value="jury">
+            <span class="q-option-text">5–7 — independent evaluators</span>
+          </label>
+          <label class="q-option" id="q2-d">
+            <input type="radio" name="q2" value="event_bb">
+            <span class="q-option-text">Variable — driven by events or workload</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="q-block" id="q3-block">
+        <div class="q-label"><span class="q-num">3</span> How critical is the outcome?</div>
+        <div class="q-options" role="radiogroup" aria-labelledby="q3-block">
+          <label class="q-option" id="q3-a">
+            <input type="radio" name="q3" value="swarm_pipeline">
+            <span class="q-option-text">Low stakes — speed matters more than perfection</span>
+          </label>
+          <label class="q-option" id="q3-b">
+            <input type="radio" name="q3" value="hier_mr">
+            <span class="q-option-text">Medium stakes — correctness matters</span>
+          </label>
+          <label class="q-option" id="q3-c">
+            <input type="radio" name="q3" value="jury_gencrit">
+            <span class="q-option-text">High stakes — consensus and verification needed</span>
+          </label>
+          <label class="q-option" id="q3-d">
+            <input type="radio" name="q3" value="adversarial">
+            <span class="q-option-text">Safety-critical — adversarial testing required</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="q-block" id="q4-block">
+        <div class="q-label"><span class="q-num">4</span> What does failure look like?</div>
+        <div class="q-options" role="radiogroup" aria-labelledby="q4-block">
+          <label class="q-option" id="q4-a">
+            <input type="radio" name="q4" value="pipeline">
+            <span class="q-option-text">One bad stage ruins everything — need stage gates</span>
+          </label>
+          <label class="q-option" id="q4-b">
+            <input type="radio" name="q4" value="swarm_mr">
+            <span class="q-option-text">One agent's work is wrong but others are fine</span>
+          </label>
+          <label class="q-option" id="q4-c">
+            <input type="radio" name="q4" value="gencrit">
+            <span class="q-option-text">Subtle quality issues that need iterative review to catch</span>
+          </label>
+          <label class="q-option" id="q4-d">
+            <input type="radio" name="q4" value="circuit">
+            <span class="q-option-text">Downstream dependencies fail — need resilience</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="q-block" id="q5-block">
+        <div class="q-label"><span class="q-num">5</span> How do agents coordinate?</div>
+        <div class="q-options" role="radiogroup" aria-labelledby="q5-block">
+          <label class="q-option" id="q5-a">
+            <input type="radio" name="q5" value="swarm">
+            <span class="q-option-text">No coordination needed — file manifests handle isolation</span>
+          </label>
+          <label class="q-option" id="q5-b">
+            <input type="radio" name="q5" value="hierarchical">
+            <span class="q-option-text">Central coordinator assigns work to specialists</span>
+          </label>
+          <label class="q-option" id="q5-c">
+            <input type="radio" name="q5" value="blackboard">
+            <span class="q-option-text">Shared data store — agents react to new entries</span>
+          </label>
+          <label class="q-option" id="q5-d">
+            <input type="radio" name="q5" value="event">
+            <span class="q-option-text">Event stream — agents subscribe to topics</span>
+          </label>
+          <label class="q-option" id="q5-e">
+            <input type="radio" name="q5" value="pipeline">
+            <span class="q-option-text">Sequential handoff — each agent passes to the next</span>
+          </label>
+        </div>
+      </div>
+    </div><!-- /.questionnaire -->
+
+    <!-- Live result -->
+    <div class="result-panel" id="result-panel" aria-live="polite" aria-atomic="true">
+      <div class="result-empty" id="result-empty">Answer the questions above — your recommendation will appear here.</div>
+      <div class="result-content" id="result-content"></div>
+    </div>
+
+  </section>
+
+  <!-- ═══════════════════════════════════════════════
+       SECTION 1 — Pattern Reference Cards
+  ═══════════════════════════════════════════════ -->
+  <section class="content-section">
+    <div class="section-heading"><span class="snum">2</span> All 12 Patterns — Reference</div>
+    <p class="section-desc">Detailed reference for each pattern. Colored left border indicates category.</p>
+
+    <div class="pattern-grid">
+
+      <!-- 1. Pipeline -->
+      <div class="pattern-card" data-cat="sequential" data-key="pipeline">
+        <div class="pattern-card-header">
+          <span class="pattern-num">01</span>
+          <span class="pattern-icon">→</span>
+          <span class="pattern-name">Pipeline</span>
+          <span class="pattern-agents">2–6 stages</span>
+        </div>
+        <div class="pattern-topology">Linear chain: A → B → C</div>
+        <div class="pattern-body">
+          <div>
+            <div class="pattern-label">When to use</div>
+            <ul>
+              <li>Output of one stage is required input to the next</li>
+              <li>Work has a fixed, predictable sequence</li>
+              <li>Each stage is independently testable</li>
+            </ul>
+          </div>
+          <div>
+            <div class="pattern-label">Failure mode</div>
+            <div class="failure-text">Bottleneck at slowest stage; one bad stage blocks all downstream work</div>
+          </div>
+          <div>
+            <div class="pattern-label">Example</div>
+            <div class="example-text">"Build → Test → Deploy" — each gate must pass before next starts</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Map-Reduce -->
+      <div class="pattern-card" data-cat="parallel" data-key="mapreduce">
+        <div class="pattern-card-header">
+          <span class="pattern-num">02</span>
+          <span class="pattern-icon">⇉</span>
+          <span class="pattern-name">Map-Reduce</span>
+          <span class="pattern-agents">N workers + 1 aggregator</span>
+        </div>
+        <div class="pattern-topology">Fan-out to N workers, fan-in to aggregator</div>
+        <div class="pattern-body">
+          <div>
+            <div class="pattern-label">When to use</div>
+            <ul>
+              <li>Same operation applied to many inputs</li>
+              <li>Results are independently reducible</li>
+              <li>Input set is enumerable up front</li>
+            </ul>
+          </div>
+          <div>
+            <div class="pattern-label">Failure mode</div>
+            <div class="failure-text">Aggregation logic too complex; partial failures silently drop data</div>
+          </div>
+          <div>
+            <div class="pattern-label">Example</div>
+            <div class="example-text">Lint 20 files in parallel, collect all errors into one report</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Hierarchical -->
+      <div class="pattern-card" data-cat="parallel" data-key="hierarchical">
+        <div class="pattern-card-header">
+          <span class="pattern-num">03</span>
+          <span class="pattern-icon">🌳</span>
+          <span class="pattern-name">Hierarchical</span>
+          <span class="pattern-agents">1 manager + 3–7 specialists</span>
+        </div>
+        <div class="pattern-topology">Tree: manager delegates to domain specialists</div>
+        <div class="pattern-body">
+          <div>
+            <div class="pattern-label">When to use</div>
+            <ul>
+              <li>Task decomposes into distinct, non-overlapping domains</li>
+              <li>Specialists need different context or tools</li>
+              <li>Work can be integrated by a coordinator</li>
+            </ul>
+          </div>
+          <div>
+            <div class="pattern-label">Failure mode</div>
+            <div class="failure-text">Manager becomes bottleneck when it does too much work itself rather than delegating</div>
+          </div>
+          <div>
+            <div class="pattern-label">Example</div>
+            <div class="example-text">Architecture agent delegates frontend, backend, and infra to three specialists</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Swarm -->
+      <div class="pattern-card" data-cat="parallel" data-key="swarm">
+        <div class="pattern-card-header">
+          <span class="pattern-num">04</span>
+          <span class="pattern-icon">⬡</span>
+          <span class="pattern-name">Swarm</span>
+          <span class="pattern-agents">3–20+ peers</span>
+        </div>
+        <div class="pattern-topology">Peer-to-peer, self-organizing, no central coordinator</div>
+        <div class="pattern-body">
+          <div>
+            <div class="pattern-label">When to use</div>
+            <ul>
+              <li>Agents can work entirely independently on non-overlapping files</li>
+              <li>File manifests provide coordination instead of runtime messages</li>
+              <li>Speed is more important than unified output</li>
+            </ul>
+          </div>
+          <div>
+            <div class="pattern-label">Failure mode</div>
+            <div class="failure-text">No runtime coordination means potential overlap — explicit file manifests are load-bearing</div>
+          </div>
+          <div>
+            <div class="pattern-label">Example</div>
+            <div class="example-text">5 agents each update one repo's README simultaneously with zero merge conflicts</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Generator-Critic -->
+      <div class="pattern-card" data-cat="iterative" data-key="gencrit">
+        <div class="pattern-card-header">
+          <span class="pattern-num">05</span>
+          <span class="pattern-icon">↻</span>
+          <span class="pattern-name">Generator-Critic</span>
+          <span class="pattern-agents">2 agents, N iterations</span>
+        </div>
+        <div class="pattern-topology">Two-agent revision loop: generate → critique → revise</div>
+        <div class="pattern-body">
+          <div>
+            <div class="pattern-label">When to use</div>
+            <ul>
+              <li>Quality improves measurably with each revision cycle</li>
+              <li>A second perspective catches issues the generator misses</li>
+              <li>Output has a clear quality bar to converge toward</li>
+            </ul>
+          </div>
+          <div>
+            <div class="pattern-label">Failure mode</div>
+            <div class="failure-text">Infinite loop without a max-iteration guard; critic too lenient to add value</div>
+          </div>
+          <div>
+            <div class="pattern-label">Example</div>
+            <div class="example-text">Write code → review code → revise → review → ship after 3 clean cycles</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. Adversarial -->
+      <div class="pattern-card" data-cat="iterative" data-key="adversarial">
+        <div class="pattern-card-header">
+          <span class="pattern-num">06</span>
+          <span class="pattern-icon">⚔</span>
+          <span class="pattern-name">Adversarial</span>
+          <span class="pattern-agents">2 teams + 1 judge</span>
+        </div>
+        <div class="pattern-topology">Red team + blue team + judge arbitrates</div>
+        <div class="pattern-body">
+          <div>
+            <div class="pattern-label">When to use</div>
+            <ul>
+              <li>Security review or robustness testing</li>
+              <li>You need to stress-test a design by finding holes</li>
+              <li>Passive review is insufficient — active attack is required</li>
+            </ul>
+          </div>
+          <div>
+            <div class="pattern-label">Failure mode</div>
+            <div class="failure-text">Adversarial agent too weak to find real issues; red team pulls punches</div>
+          </div>
+          <div>
+            <div class="pattern-label">Example</div>
+            <div class="example-text">Security audit: attacker agent finds exploits, defender agent patches, judge scores</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 7. Jury -->
+      <div class="pattern-card" data-cat="governance" data-key="jury">
+        <div class="pattern-card-header">
+          <span class="pattern-num">07</span>
+          <span class="pattern-icon">⚖</span>
+          <span class="pattern-name">Jury</span>
+          <span class="pattern-agents">3–7 independent evaluators</span>
+        </div>
+        <div class="pattern-topology">Independent evaluators, majority vote or synthesis</div>
+        <div class="pattern-body">
+          <div>
+            <div class="pattern-label">When to use</div>
+            <ul>
+              <li>High-stakes decisions where single-agent bias is unacceptable</li>
+              <li>Evaluators should have genuinely different perspectives</li>
+              <li>You need a defensible, consensus-based outcome</li>
+            </ul>
+          </div>
+          <div>
+            <div class="pattern-label">Failure mode</div>
+            <div class="failure-text">Identical agents produce identical opinions — diversity is load-bearing; homogeneous jury is theater</div>
+          </div>
+          <div>
+            <div class="pattern-label">Example</div>
+            <div class="example-text">3 agents independently review an architecture proposal; synthesis highlights disagreements</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 8. Blackboard -->
+      <div class="pattern-card" data-cat="reactive" data-key="blackboard">
+        <div class="pattern-card-header">
+          <span class="pattern-num">08</span>
+          <span class="pattern-icon">📋</span>
+          <span class="pattern-name">Blackboard</span>
+          <span class="pattern-agents">2–N agents + shared store</span>
+        </div>
+        <div class="pattern-topology">Shared store; agents act on new entries as they arrive</div>
+        <div class="pattern-body">
+          <div>
+            <div class="pattern-label">When to use</div>
+            <ul>
+              <li>Work is event-driven; new items trigger processing</li>
+              <li>Agents are specialists that each handle a subset of event types</li>
+              <li>No fixed order — agents self-schedule based on store contents</li>
+            </ul>
+          </div>
+          <div>
+            <div class="pattern-label">Failure mode</div>
+            <div class="failure-text">Race conditions on shared state; agents process same entry twice without locking</div>
+          </div>
+          <div>
+            <div class="pattern-label">Example</div>
+            <div class="example-text">CAS store where agents process new skills as they arrive, each doing a different check</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 9. Chain-of-Responsibility -->
+      <div class="pattern-card" data-cat="sequential" data-key="cor">
+        <div class="pattern-card-header">
+          <span class="pattern-num">09</span>
+          <span class="pattern-icon">⛓</span>
+          <span class="pattern-name">Chain-of-Responsibility</span>
+          <span class="pattern-agents">3–5 handlers</span>
+        </div>
+        <div class="pattern-topology">Each agent handles or forwards to the next</div>
+        <div class="pattern-body">
+          <div>
+            <div class="pattern-label">When to use</div>
+            <ul>
+              <li>Requests need escalation through levels of capability</li>
+              <li>Simpler handlers resolve most cases cheaply</li>
+              <li>Complex cases should reach more expensive agents</li>
+            </ul>
+          </div>
+          <div>
+            <div class="pattern-label">Failure mode</div>
+            <div class="failure-text">No catch-all terminal agent; requests fall off the end of the chain silently</div>
+          </div>
+          <div>
+            <div class="pattern-label">Example</div>
+            <div class="example-text">Simple fix → complex fix → architectural review → human escalation</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 10. Circuit-Breaker -->
+      <div class="pattern-card" data-cat="resilience" data-key="circuit">
+        <div class="pattern-card-header">
+          <span class="pattern-num">10</span>
+          <span class="pattern-icon">⚡</span>
+          <span class="pattern-name">Circuit-Breaker</span>
+          <span class="pattern-agents">1 wrapper + downstream</span>
+        </div>
+        <div class="pattern-topology">Wrapper monitors downstream; trips open on repeated failures</div>
+        <div class="pattern-body">
+          <div>
+            <div class="pattern-label">When to use</div>
+            <ul>
+              <li>Downstream service is unreliable or rate-limited</li>
+              <li>Cascading failures must be prevented</li>
+              <li>Graceful degradation is acceptable</li>
+            </ul>
+          </div>
+          <div>
+            <div class="pattern-label">Failure mode</div>
+            <div class="failure-text">Trip threshold too sensitive — breaker opens on transient errors and never recovers</div>
+          </div>
+          <div>
+            <div class="pattern-label">Example</div>
+            <div class="example-text">API client that stops calling after 3 consecutive failures and returns cached results</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 11. Event-Driven -->
+      <div class="pattern-card" data-cat="reactive" data-key="event">
+        <div class="pattern-card-header">
+          <span class="pattern-num">11</span>
+          <span class="pattern-icon">📡</span>
+          <span class="pattern-name">Event-Driven</span>
+          <span class="pattern-agents">N subscribers</span>
+        </div>
+        <div class="pattern-topology">Reactive subscribers to event streams; pub/sub topology</div>
+        <div class="pattern-body">
+          <div>
+            <div class="pattern-label">When to use</div>
+            <ul>
+              <li>Real-time processing of asynchronous events</li>
+              <li>Multiple consumers need the same event stream</li>
+              <li>Processing logic is decoupled from event production</li>
+            </ul>
+          </div>
+          <div>
+            <div class="pattern-label">Failure mode</div>
+            <div class="failure-text">Event flood overwhelms slow subscribers; bounded fanout required to prevent silent drops</div>
+          </div>
+          <div>
+            <div class="pattern-label">Example</div>
+            <div class="example-text">Log watcher dispatches agents on error patterns as they stream in from multiple files</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 12. Meta-Pattern Selector -->
+      <div class="pattern-card" data-cat="meta" data-key="meta">
+        <div class="pattern-card-header">
+          <span class="pattern-num">12</span>
+          <span class="pattern-icon">🧭</span>
+          <span class="pattern-name">Meta-Pattern Selector</span>
+          <span class="pattern-agents">1 decision agent</span>
+        </div>
+        <div class="pattern-topology">Decision agent selects the right pattern for the task</div>
+        <div class="pattern-body">
+          <div>
+            <div class="pattern-label">When to use</div>
+            <ul>
+              <li>Pattern choice itself is the hard problem</li>
+              <li>Task structure is ambiguous or novel</li>
+              <li>Multiple patterns could apply and trade-offs are non-obvious</li>
+            </ul>
+          </div>
+          <div>
+            <div class="pattern-label">Failure mode</div>
+            <div class="failure-text">Selector has stale heuristics; over-fits to familiar patterns regardless of task shape</div>
+          </div>
+          <div>
+            <div class="pattern-label">Example</div>
+            <div class="example-text">This page — a structured questionnaire that routes you to the right pattern</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /.pattern-grid -->
+  </section>
+
+  <!-- ═══════════════════════════════════════════════
+       SECTION 3 — Dispatch Plan Templates
+  ═══════════════════════════════════════════════ -->
+  <section class="content-section">
+    <div class="section-heading"><span class="snum">3</span> Dispatch Plan Templates</div>
+    <p class="section-desc">Copy-paste plans for the 5 most-used patterns. Replace <code style="color:var(--warn-soft);font-size:0.8em;">[placeholders]</code> before dispatching.</p>
+
+    <div class="callout info">The verification protocol is non-negotiable. Agent "done" is not done until independently verified with git status, grep, and a full build/test run.</div>
+
+    <!-- Pipeline -->
+    <div class="template-block" id="tpl-pipeline">
+      <div class="template-header">
+        <div class="template-title"><span class="t-icon">→</span> Pipeline</div>
+        <button class="copy-btn" onclick="copyTemplate('tpl-pipeline-code')">copy</button>
+      </div>
+      <pre class="template-code" id="tpl-pipeline-code"><span class="cm">## Dispatch Plan: Pipeline</span>
+<span class="kw">Pattern:</span> <span class="val">Linear Stage Chain</span>
+<span class="kw">Stage count:</span> <span class="ph">[N stages]</span>
+<span class="kw">Model:</span> <span class="val">sonnet</span> (each stage) — opus only if design decisions needed
+
+<span class="kw">### Stage Definitions</span>
+<span class="kw">Stage 1:</span> <span class="ph">[name]</span>
+  Input:  <span class="ph">[what it receives]</span>
+  Output: <span class="ph">[what it produces]</span>
+  Gate:   <span class="ph">[pass condition before Stage 2 begins]</span>
+  Task:   <span class="ph">[what to do]</span>
+
+<span class="kw">Stage 2:</span> <span class="ph">[name]</span>
+  Input:  <span class="ph">[output of Stage 1]</span>
+  Output: <span class="ph">[what it produces]</span>
+  Gate:   <span class="ph">[pass condition before Stage 3 begins]</span>
+  Task:   <span class="ph">[what to do]</span>
+
+<span class="cm"># ... repeat for each stage</span>
+
+<span class="kw">### Failure Handling</span>
+- If any stage gate fails: <span class="ph">[stop / retry / escalate]</span>
+- Max retries per stage: <span class="ph">[N]</span>
+- On terminal failure: <span class="ph">[rollback strategy]</span>
+
+<span class="kw">### Verification Protocol</span>
+After all stages complete:
+1. git status — verify expected files changed
+2. grep for <span class="ph">[expected output symbols/strings]</span>
+3. <span class="ph">go build ./...</span> (or equivalent)
+4. <span class="ph">go test ./...</span>
+5. Read final output file — does it match Stage N spec?
+
+<span class="kw">### Integration</span>
+Main thread wires stage outputs, runs final build, commits.</pre>
+    </div>
+
+    <!-- Swarm -->
+    <div class="template-block" id="tpl-swarm">
+      <div class="template-header">
+        <div class="template-title"><span class="t-icon">⬡</span> Swarm</div>
+        <button class="copy-btn" onclick="copyTemplate('tpl-swarm-code')">copy</button>
+      </div>
+      <pre class="template-code" id="tpl-swarm-code"><span class="cm">## Dispatch Plan: Swarm (Zero-Overlap)</span>
+<span class="kw">Pattern:</span> <span class="val">Zero-Overlap Agent Swarm</span>
+<span class="kw">Agent count:</span> <span class="ph">[N]</span>
+<span class="kw">Model:</span> <span class="val">sonnet</span> (execution tasks)
+
+<span class="cm"># CRITICAL: file manifests are the coordination mechanism.
+# Each agent MUST have a non-overlapping file list.
+# No agent may write a file in another agent's manifest.</span>
+
+<span class="kw">### Agent Manifests</span>
+<span class="kw">Agent 1:</span> <span class="ph">[descriptive name]</span>
+  Files: <span class="ph">[explicit list of files this agent owns]</span>
+  Task:  <span class="ph">[what to do — scoped entirely to above files]</span>
+
+<span class="kw">Agent 2:</span> <span class="ph">[descriptive name]</span>
+  Files: <span class="ph">[explicit list — no overlap with Agent 1]</span>
+  Task:  <span class="ph">[what to do — scoped entirely to above files]</span>
+
+<span class="kw">Agent 3:</span> <span class="ph">[descriptive name]</span>
+  Files: <span class="ph">[explicit list — no overlap with Agents 1–2]</span>
+  Task:  <span class="ph">[what to do — scoped entirely to above files]</span>
+
+<span class="cm"># ... add agents as needed</span>
+
+<span class="kw">### Dispatch Note</span>
+- Do NOT use <span class="em">isolation: "worktree"</span> — writes are silently discarded on cleanup
+- Dispatch all agents in parallel (same message if using Claude Code)
+- Verify EACH agent's output independently — do not trust self-reports
+
+<span class="kw">### Verification Protocol</span>
+After all agents report complete:
+1. git status — verify all expected files changed
+2. grep for <span class="ph">[expected symbols or patterns]</span> in each agent's files
+3. <span class="ph">go build ./...</span> (or equivalent)
+4. <span class="ph">go test ./...</span>
+5. Read each modified file — does it make sense?
+6. Confirm zero merge conflicts
+
+<span class="kw">### Integration</span>
+Main thread wires any cross-agent imports, runs final build, commits.</pre>
+    </div>
+
+    <!-- Hierarchical -->
+    <div class="template-block" id="tpl-hier">
+      <div class="template-header">
+        <div class="template-title"><span class="t-icon">🌳</span> Hierarchical</div>
+        <button class="copy-btn" onclick="copyTemplate('tpl-hier-code')">copy</button>
+      </div>
+      <pre class="template-code" id="tpl-hier-code"><span class="cm">## Dispatch Plan: Hierarchical</span>
+<span class="kw">Pattern:</span> <span class="val">Manager + Domain Specialists</span>
+<span class="kw">Manager model:</span> <span class="val">opus</span> (architecture / synthesis decisions)
+<span class="kw">Specialist model:</span> <span class="val">sonnet</span> (implementation)
+
+<span class="kw">### Interface Contract</span>
+<span class="cm"># Define this BEFORE dispatching any specialists.
+# Each specialist must know the exact interface it must satisfy.</span>
+<span class="ph">[Domain A interface / API surface]</span>
+<span class="ph">[Domain B interface / API surface]</span>
+<span class="ph">[Domain C interface / API surface]</span>
+
+<span class="kw">### Manager Responsibilities</span>
+- Decompose task into domain work packages
+- Define interface contracts for each specialist
+- Integrate specialist outputs
+- Run final verification
+- Does NOT implement — delegates everything
+
+<span class="kw">### Specialist Definitions</span>
+<span class="kw">Specialist A:</span> <span class="ph">[domain name]</span>
+  Domain:    <span class="ph">[what this agent owns]</span>
+  Interface: <span class="ph">[what it must produce for integration]</span>
+  Task:      <span class="ph">[implementation instructions]</span>
+  Model:     sonnet
+
+<span class="kw">Specialist B:</span> <span class="ph">[domain name]</span>
+  Domain:    <span class="ph">[what this agent owns]</span>
+  Interface: <span class="ph">[what it must produce for integration]</span>
+  Task:      <span class="ph">[implementation instructions]</span>
+  Model:     sonnet
+
+<span class="cm"># ... add specialists per domain</span>
+
+<span class="kw">### Compilation Gate</span>
+<span class="cm"># All specialists must pass this gate before integration begins</span>
+- Each specialist runs: <span class="ph">go build ./...</span> before reporting complete
+- Specialist output is REJECTED if build fails
+
+<span class="kw">### Verification Protocol</span>
+After all specialists report complete:
+1. git status — verify all expected files changed
+2. grep for interface symbols across all specialist outputs
+3. <span class="ph">go build ./...</span> from repo root
+4. <span class="ph">go test ./...</span>
+5. Manager reads integration seams — do interfaces align?
+
+<span class="kw">### Integration</span>
+Manager thread wires domain outputs, resolves interface mismatches, commits.</pre>
+    </div>
+
+    <!-- Generator-Critic -->
+    <div class="template-block" id="tpl-gencrit">
+      <div class="template-header">
+        <div class="template-title"><span class="t-icon">↻</span> Generator-Critic</div>
+        <button class="copy-btn" onclick="copyTemplate('tpl-gencrit-code')">copy</button>
+      </div>
+      <pre class="template-code" id="tpl-gencrit-code"><span class="cm">## Dispatch Plan: Generator-Critic</span>
+<span class="kw">Pattern:</span> <span class="val">Two-Agent Revision Loop</span>
+<span class="kw">Generator model:</span> <span class="val">sonnet</span>
+<span class="kw">Critic model:</span> <span class="val">opus</span> (quality gate needs stronger judgment)
+<span class="kw">Max iterations:</span> <span class="ph">[3]</span> (REQUIRED — prevents infinite loop)
+<span class="kw">Ship condition:</span> <span class="ph">[no critical issues in critic's final review]</span>
+
+<span class="kw">### Generator Instructions</span>
+Task:        <span class="ph">[what to produce]</span>
+Output:      <span class="ph">[file(s) to write]</span>
+Constraints: <span class="ph">[must satisfy these requirements]</span>
+On revision: apply ALL critic feedback before next submission
+
+<span class="kw">### Critic Instructions</span>
+Review for:
+  - <span class="ph">[quality criterion 1]</span>
+  - <span class="ph">[quality criterion 2]</span>
+  - <span class="ph">[quality criterion 3]</span>
+Output format: structured list of issues, severity (critical/minor), suggested fix
+PASS condition: <span class="ph">[zero critical issues]</span>
+FAIL action:    return to generator with full issue list
+
+<span class="kw">### Iteration Log</span>
+<span class="cm"># Track this to enforce max-iteration guard</span>
+Iteration 1: Generator produces v1 → Critic reviews
+Iteration 2: Generator produces v2 (fixes applied) → Critic reviews
+Iteration 3: Generator produces v3 → Critic reviews → SHIP or ESCALATE
+
+<span class="kw">### Escalation</span>
+If max iterations reached without PASS:
+- <span class="ph">[escalate to human / relax criteria / log for manual review]</span>
+
+<span class="kw">### Verification Protocol</span>
+After critic PASS:
+1. git status — verify output file written
+2. Run output through <span class="ph">[automated validator if available]</span>
+3. Main thread does final read — does it meet the original goal?
+4. Commit with iteration count in commit message</pre>
+    </div>
+
+    <!-- Jury -->
+    <div class="template-block" id="tpl-jury">
+      <div class="template-header">
+        <div class="template-title"><span class="t-icon">⚖</span> Jury</div>
+        <button class="copy-btn" onclick="copyTemplate('tpl-jury-code')">copy</button>
+      </div>
+      <pre class="template-code" id="tpl-jury-code"><span class="cm">## Dispatch Plan: Jury</span>
+<span class="kw">Pattern:</span> <span class="val">Independent Evaluators + Synthesis</span>
+<span class="kw">Juror count:</span> <span class="ph">[3 or 5]</span> (odd number for clear majority)
+<span class="kw">Juror model:</span> <span class="val">sonnet</span>
+<span class="kw">Synthesizer model:</span> <span class="val">opus</span> (finds meaningful disagreements)
+
+<span class="cm"># CRITICAL: jurors must NOT see each other's reviews before submitting.
+# Dispatch all jurors in parallel. Synthesize only after all complete.</span>
+
+<span class="kw">### Subject Under Review</span>
+<span class="ph">[what is being evaluated — be specific]</span>
+<span class="ph">[link or paste the artifact to review]</span>
+
+<span class="kw">### Juror Instructions (identical for all jurors)</span>
+Evaluate independently. Do not assume other jurors exist.
+Score each criterion 1–5. Give a PASS/FAIL verdict.
+Explain your reasoning in 2–4 sentences per criterion.
+Criteria:
+  - <span class="ph">[criterion 1, e.g. correctness]</span>
+  - <span class="ph">[criterion 2, e.g. completeness]</span>
+  - <span class="ph">[criterion 3, e.g. maintainability]</span>
+
+<span class="kw">### Juror Differentiation</span>
+<span class="cm"># Give each juror a different lens to ensure genuine diversity</span>
+Juror 1 perspective: <span class="ph">[e.g. security-first]</span>
+Juror 2 perspective: <span class="ph">[e.g. performance-first]</span>
+Juror 3 perspective: <span class="ph">[e.g. maintainability-first]</span>
+<span class="cm"># Without differentiation, identical agents = identical opinions = theater</span>
+
+<span class="kw">### Synthesis Instructions (run AFTER all jurors complete)</span>
+- Tally scores per criterion
+- Identify points of agreement (≥2/3 consensus)
+- Surface all disagreements — these are the real findings
+- Produce PASS/FAIL overall with confidence level
+- List top 3 required changes if FAIL
+
+<span class="kw">### Verification Protocol</span>
+After synthesis:
+1. Read all juror outputs — check for lazy reviews (very short, no reasoning)
+2. Confirm synthesizer found genuine disagreements, not just summary
+3. Apply required changes from synthesis output
+4. Re-run jury if major changes were made</pre>
+    </div>
+
+  </section>
+
+</main>
+
+<script>
+  // ── Scoring weights ──────────────────────────────────────────────────
+  // Each answer contributes weight to pattern keys.
+  // pattern keys: pipeline, mapreduce, hierarchical, swarm, gencrit,
+  //               adversarial, jury, blackboard, cor, circuit, event, meta
+
+  const WEIGHTS = {
+    // Q1 — task relationships
+    q1: {
+      pipeline:     { pipeline: 3, cor: 1 },
+      mapreduce:    { mapreduce: 3, swarm: 2 },
+      hierarchical: { hierarchical: 3, swarm: 1 },
+      gencrit:      { gencrit: 3, adversarial: 1, jury: 1 }
+    },
+    // Q2 — agent count
+    q2: {
+      gencrit_adv:  { gencrit: 2, adversarial: 2 },
+      swarm_hier:   { swarm: 2, hierarchical: 2, mapreduce: 1 },
+      jury:         { jury: 3 },
+      event_bb:     { event: 2, blackboard: 2, mapreduce: 1 }
+    },
+    // Q3 — criticality
+    q3: {
+      swarm_pipeline:  { swarm: 2, pipeline: 1 },
+      hier_mr:         { hierarchical: 2, mapreduce: 2 },
+      jury_gencrit:    { jury: 3, gencrit: 2 },
+      adversarial:     { adversarial: 3, jury: 1 }
+    },
+    // Q4 — failure shape
+    q4: {
+      pipeline:    { pipeline: 3 },
+      swarm_mr:    { swarm: 2, mapreduce: 2 },
+      gencrit:     { gencrit: 3, jury: 1 },
+      circuit:     { circuit: 3 }
+    },
+    // Q5 — coordination style
+    q5: {
+      swarm:        { swarm: 3 },
+      hierarchical: { hierarchical: 3 },
+      blackboard:   { blackboard: 3 },
+      event:        { event: 3 },
+      pipeline:     { pipeline: 2, cor: 2 }
+    }
+  };
+
+  const PATTERNS = {
+    pipeline: {
+      name: 'Pipeline',
+      icon: '→',
+      desc: 'Linear chain where each stage\'s output is the next stage\'s input. Excellent when work has a fixed sequence and each step needs to complete before the next begins.',
+      why: {
+        q1: { pipeline: 'Tasks must run in sequence — classic pipeline shape' },
+        q4: { pipeline: 'One bad stage ruins everything — stage gates are the right control point' },
+        q5: { pipeline: 'Sequential handoff is the definition of a pipeline' }
+      },
+      tpl: 'tpl-pipeline'
+    },
+    mapreduce: {
+      name: 'Map-Reduce',
+      icon: '⇉',
+      desc: 'Fan out the same operation to N workers in parallel, then collect results in an aggregator. Ideal when your input is a list of homogeneous items.',
+      why: {
+        q1: { mapreduce: 'Same operation on different inputs — classic map step' },
+        q2: { swarm_hier: 'Small parallel worker pool' },
+        q3: { hier_mr: 'Correctness matters and errors should be isolated per item' },
+        q4: { swarm_mr: 'One bad item should not block the others' }
+      },
+      tpl: null
+    },
+    hierarchical: {
+      name: 'Hierarchical',
+      icon: '🌳',
+      desc: 'A manager agent decomposes the task and delegates domain work to specialists, then integrates their outputs. The manager must stay lean — only strategy and wiring, never implementation.',
+      why: {
+        q1: { hierarchical: 'Task splits into distinct, independent domains' },
+        q2: { swarm_hier: 'Multiple parallel specialists needed' },
+        q3: { hier_mr: 'Correctness requires domain expertise' },
+        q5: { hierarchical: 'Central coordinator assigns work' }
+      },
+      tpl: 'tpl-hier'
+    },
+    swarm: {
+      name: 'Swarm',
+      icon: '⬡',
+      desc: 'Peers work in parallel on explicitly non-overlapping file sets. No runtime coordination — file manifests are the only coordination mechanism. Fastest pattern for large homogeneous work.',
+      why: {
+        q1: { mapreduce: 'Independent items needing parallel execution' },
+        q3: { swarm_pipeline: 'Speed matters — swarm is the fastest parallel pattern' },
+        q4: { swarm_mr: 'Isolated failures — one bad agent doesn\'t block others' },
+        q5: { swarm: 'No coordination needed — file manifests handle isolation' }
+      },
+      tpl: 'tpl-swarm'
+    },
+    gencrit: {
+      name: 'Generator-Critic',
+      icon: '↻',
+      desc: 'Two agents in a revision loop: generator produces, critic evaluates and returns structured feedback, generator revises. Requires a hard max-iteration guard to prevent infinite loops.',
+      why: {
+        q1: { gencrit: 'Work needs iteration and improvement cycles' },
+        q2: { gencrit_adv: '2 agents — one produces, one reviews' },
+        q3: { jury_gencrit: 'High stakes — iterative refinement catches issues' },
+        q4: { gencrit: 'Subtle quality issues that only show up under scrutiny' }
+      },
+      tpl: 'tpl-gencrit'
+    },
+    adversarial: {
+      name: 'Adversarial',
+      icon: '⚔',
+      desc: 'Red team actively attacks, blue team defends, judge arbitrates. Used when passive review is insufficient and real holes need to be found by an agent explicitly trying to break things.',
+      why: {
+        q1: { gencrit: 'Iterative attack-defend cycles' },
+        q2: { gencrit_adv: '2 teams + judge' },
+        q3: { adversarial: 'Safety-critical — needs adversarial testing' }
+      },
+      tpl: null
+    },
+    jury: {
+      name: 'Jury',
+      icon: '⚖',
+      desc: 'Independent evaluators review the same artifact without seeing each other\'s opinions. A synthesizer surfaces consensus and disagreements. Juror diversity is load-bearing — identical agents add no value.',
+      why: {
+        q2: { jury: '5–7 independent evaluators — jury topology' },
+        q3: { jury_gencrit: 'High stakes — consensus-based outcome required' }
+      },
+      tpl: 'tpl-jury'
+    },
+    blackboard: {
+      name: 'Blackboard',
+      icon: '📋',
+      desc: 'A shared store that agents watch. When new entries appear, the appropriate specialist processes them. No predetermined order — agents self-schedule based on store contents.',
+      why: {
+        q2: { event_bb: 'Variable agent count driven by workload' },
+        q5: { blackboard: 'Shared data store as coordination mechanism' }
+      },
+      tpl: null
+    },
+    cor: {
+      name: 'Chain-of-Responsibility',
+      icon: '⛓',
+      desc: 'Each agent handles the request if it can, or forwards to the next. Builds in escalation paths. Cheaper agents handle the common case; expensive agents only see what they need to.',
+      why: {
+        q1: { pipeline: 'Sequential — request flows down a chain' },
+        q5: { pipeline: 'Sequential handoff with conditional forwarding' }
+      },
+      tpl: null
+    },
+    circuit: {
+      name: 'Circuit-Breaker',
+      icon: '⚡',
+      desc: 'A wrapper that monitors downstream calls and stops making them after repeated failures. Prevents cascading failures and allows graceful degradation when dependencies are unreliable.',
+      why: {
+        q4: { circuit: 'Downstream failures require resilience and isolation' }
+      },
+      tpl: null
+    },
+    event: {
+      name: 'Event-Driven',
+      icon: '📡',
+      desc: 'Agents subscribe to event streams and react as events arrive. Decouples producers from consumers. Requires bounded fanout to prevent slow subscribers from dropping events.',
+      why: {
+        q2: { event_bb: 'Variable agent count — event-driven scaling' },
+        q5: { event: 'Event stream is the coordination mechanism' }
+      },
+      tpl: null
+    }
+  };
+
+  const WHY_LABELS = {
+    q1: 'Q1 (task relationships)',
+    q2: 'Q2 (agent count)',
+    q3: 'Q3 (criticality)',
+    q4: 'Q4 (failure shape)',
+    q5: 'Q5 (coordination)'
+  };
+
+  // ── State ────────────────────────────────────────────────────────────
+  const answers = { q1: null, q2: null, q3: null, q4: null, q5: null };
+
+  // ── Event listeners ──────────────────────────────────────────────────
+  document.querySelectorAll('.q-option input[type="radio"]').forEach(radio => {
+    radio.addEventListener('change', () => {
+      const name = radio.name;            // "q1" … "q5"
+      const val  = radio.value;
+      answers[name] = val;
+
+      // highlight selected row
+      document.querySelectorAll(`.q-option input[name="${name}"]`).forEach(r => {
+        r.closest('.q-option').classList.toggle('selected', r === radio);
+      });
+
+      render();
+    });
+  });
+
+  // ── Scoring ──────────────────────────────────────────────────────────
+  function score() {
+    const totals = {};
+    const reasons = {}; // patternKey → [why string, ...]
+
+    for (const [q, val] of Object.entries(answers)) {
+      if (!val) continue;
+      const bucket = WEIGHTS[q]?.[val];
+      if (!bucket) continue;
+      for (const [pk, wt] of Object.entries(bucket)) {
+        totals[pk] = (totals[pk] || 0) + wt;
+        // record which question drove this
+        const patDef = PATTERNS[pk];
+        if (!reasons[pk]) reasons[pk] = [];
+        // find the why text
+        const why = patDef?.why?.[q]?.[val];
+        if (why && !reasons[pk].includes(why)) reasons[pk].push(why);
+      }
+    }
+
+    // sort by total descending
+    const ranked = Object.entries(totals)
+      .sort((a, b) => b[1] - a[1]);
+
+    return { ranked, reasons };
+  }
+
+  // ── Render ───────────────────────────────────────────────────────────
+  function render() {
+    const answered = Object.values(answers).filter(Boolean).length;
+    const { ranked, reasons } = score();
+
+    const emptyEl   = document.getElementById('result-empty');
+    const contentEl = document.getElementById('result-content');
+
+    if (answered === 0 || ranked.length === 0) {
+      emptyEl.style.display = 'flex';
+      contentEl.classList.remove('visible');
+      return;
+    }
+
+    emptyEl.style.display = 'none';
+    contentEl.classList.add('visible');
+
+    const [topKey, topScore]       = ranked[0];
+    const runnerUp                 = ranked[1];
+    const pat                      = PATTERNS[topKey];
+    if (!pat) return;
+
+    const whyList = (reasons[topKey] || [])
+      .map(w => `<li>${w}</li>`).join('');
+
+    const runnerUpHtml = runnerUp
+      ? `<div class="runner-up">Runner-up: <strong>${PATTERNS[runnerUp[0]]?.icon} ${PATTERNS[runnerUp[0]]?.name}</strong> — consider if your task leans more toward ${runnerUp[0] === 'jury' ? 'consensus' : runnerUp[0] === 'mapreduce' ? 'homogeneous parallel work' : runnerUp[0] === 'gencrit' ? 'iterative quality' : runnerUp[0] === 'swarm' ? 'zero-overlap parallel execution' : 'that pattern\'s strengths'}</div>`
+      : '';
+
+    const tplLink = pat.tpl
+      ? `<p style="font-size:0.75rem;color:var(--text-muted);margin-top:0.75rem;">Dispatch template: <a href="#${pat.tpl}" style="color:var(--accent);">scroll to template</a> or see Section 3 below.</p>`
+      : `<p style="font-size:0.75rem;color:var(--text-subtle);margin-top:0.75rem;">No pre-built template — adapt the Swarm or Hierarchical template to your needs.</p>`;
+
+    const progress = answered < 5
+      ? `<p style="font-size:0.72rem;color:var(--warn-soft);margin-top:0.6rem;">${5 - answered} question${5 - answered > 1 ? 's' : ''} remaining — recommendation will sharpen as you answer more.</p>`
+      : '';
+
+    contentEl.innerHTML = `
+      <div class="result-header">
+        <div class="result-icon">${pat.icon}</div>
+        <div class="result-title-group">
+          <div class="result-label">Recommended Pattern</div>
+          <div class="result-name">${pat.name}</div>
+        </div>
+      </div>
+      <div class="result-body">
+        <p class="result-desc">${pat.desc}</p>
+        ${whyList ? `
+        <div class="result-why">
+          <div class="result-why-title">Why this pattern</div>
+          <ul class="result-why-list">${whyList}</ul>
+        </div>` : ''}
+        ${runnerUpHtml}
+        ${tplLink}
+        ${progress}
+      </div>
+    `;
+  }
+
+  // ── Copy template ────────────────────────────────────────────────────
+  function copyTemplate(preId) {
+    const pre = document.getElementById(preId);
+    if (!pre) return;
+    const text = pre.textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = pre.closest('.template-block').querySelector('.copy-btn');
+      btn.textContent = 'copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'copy';
+        btn.classList.remove('copied');
+      }, 1800);
+    }).catch(() => {
+      // Fallback: select the text
+      const range = document.createRange();
+      range.selectNodeContents(pre);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    });
+  }
+
+  // Initial render
+  render();
+</script>
+</body>
+</html>

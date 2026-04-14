@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Copy-Paste Starter Kit — Orchestration Guide</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    /* ── CSS custom properties ── */
+    :root {
+      --bg:           #0d1117;
+      --bg-secondary: #161b22;
+      --bg-tertiary:  #21262d;
+      --border:       #30363d;
+      --text:         #c9d1d9;
+      --text-muted:   #8b949e;
+      --text-subtle:  #6e7681;
+      --accent:       #58a6ff;
+      --accent-dim:   #1f6feb;
+      --success:      #238636;
+      --success-text: #3fb950;
+      --warning:      #da3633;
+      --warning-text: #f85149;
+      --warn-soft:    #e3b341;
+      --purple:       #bc8cff;
+      --teal:         #39d353;
+      --font-mono:    'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+      --radius:       6px;
+      --content-max:  900px;
+    }
+
+    /* ── Reset & base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; font-size: 15px; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-mono);
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    /* ── Top nav bar ── */
+    nav.topbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0;
+      padding: 0 2rem;
+      height: 3rem;
+    }
+
+    nav.topbar .nav-brand {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--accent);
+      text-decoration: none;
+      letter-spacing: 0.04em;
+      margin-right: 1.5rem;
+      white-space: nowrap;
+    }
+
+    nav.topbar .nav-brand:hover { color: #e6edf3; text-decoration: none; }
+
+    nav.topbar .nav-links {
+      display: flex;
+      gap: 0;
+      list-style: none;
+      align-items: center;
+    }
+
+    nav.topbar .nav-links a {
+      display: block;
+      padding: 0 0.9rem;
+      height: 3rem;
+      line-height: 3rem;
+      font-size: 0.73rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      border-bottom: 2px solid transparent;
+      transition: color 0.15s, border-color 0.15s;
+      white-space: nowrap;
+    }
+
+    nav.topbar .nav-links a:hover { color: var(--accent); border-bottom-color: var(--accent); text-decoration: none; }
+
+    nav.topbar .nav-links a.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* ── Layout ── */
+    main {
+      max-width: var(--content-max);
+      margin: 0 auto;
+      padding: 3rem 2.5rem 6rem;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 3rem 0 2.5rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 3.5rem;
+    }
+
+    .hero-eyebrow {
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1rem;
+    }
+
+    .hero h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      line-height: 1.2;
+      color: #e6edf3;
+      margin-bottom: 0.75rem;
+      letter-spacing: -0.02em;
+    }
+
+    .hero .subtitle {
+      font-size: 1rem;
+      color: var(--text-muted);
+      margin-bottom: 1.25rem;
+      font-weight: 300;
+    }
+
+    .hero .byline {
+      font-size: 0.72rem;
+      color: var(--text-subtle);
+      padding: 0.5rem 0.85rem;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      display: inline-block;
+    }
+
+    /* ── Sections ── */
+    section {
+      margin-bottom: 4rem;
+    }
+
+    section > h2 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #e6edf3;
+      margin-bottom: 0.35rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    section > h2 .section-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.6rem;
+      height: 1.6rem;
+      border-radius: 50%;
+      background: var(--accent-dim);
+      color: #e6edf3;
+      font-size: 0.75rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    section > .section-desc {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      margin: 0.5rem 0 1.75rem;
+    }
+
+    h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #e6edf3;
+      margin: 1.75rem 0 0.6rem;
+    }
+
+    h4 {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--warn-soft);
+      margin: 1.25rem 0 0.4rem;
+    }
+
+    p {
+      color: var(--text);
+      margin-bottom: 0.85rem;
+      font-size: 0.88rem;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    a:hover { text-decoration: underline; }
+
+    ul, ol {
+      padding-left: 1.5rem;
+      font-size: 0.88rem;
+      color: var(--text);
+      margin-bottom: 0.85rem;
+    }
+
+    li { margin-bottom: 0.3rem; }
+
+    /* ── Code blocks ── */
+    pre {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.1rem 1.25rem;
+      overflow-x: auto;
+      margin: 0.85rem 0 0.5rem;
+      font-size: 0.78rem;
+      line-height: 1.65;
+      position: relative;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.83em;
+      background: var(--bg-tertiary);
+      padding: 0.15em 0.4em;
+      border-radius: 3px;
+      color: #e6edf3;
+    }
+
+    pre code {
+      background: none;
+      padding: 0;
+      font-size: inherit;
+      color: var(--text);
+    }
+
+    /* syntax spans */
+    .kw  { color: #ff7b72; }
+    .str { color: #a5d6ff; }
+    .cmt { color: var(--text-subtle); font-style: italic; }
+    .fn  { color: #d2a8ff; }
+    .num { color: #79c0ff; }
+    .op  { color: #ff7b72; }
+    .var { color: var(--warn-soft); }
+    .typ { color: #ffa657; }
+
+    /* ── Template container ── */
+    .template-block {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin: 1.25rem 0;
+    }
+
+    .template-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.65rem 1.1rem;
+      background: var(--bg-tertiary);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .template-label {
+      font-size: 0.67rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+    }
+
+    .copy-cue {
+      font-size: 0.67rem;
+      color: var(--accent);
+      background: rgba(88,166,255,0.1);
+      border: 1px solid rgba(88,166,255,0.2);
+      border-radius: 3px;
+      padding: 0.15rem 0.55rem;
+      cursor: pointer;
+      transition: background 0.15s;
+      font-family: var(--font-mono);
+    }
+
+    .copy-cue:hover {
+      background: rgba(88,166,255,0.2);
+    }
+
+    .copy-cue.copied {
+      color: var(--success-text);
+      background: rgba(35,134,54,0.15);
+      border-color: rgba(63,185,80,0.25);
+    }
+
+    .template-block pre {
+      border: none;
+      border-radius: 0;
+      margin: 0;
+      background: var(--bg-secondary);
+    }
+
+    .template-filename {
+      font-size: 0.7rem;
+      color: var(--success-text);
+      font-family: var(--font-mono);
+    }
+
+    /* ── Variant tabs ── */
+    .variant-set {
+      margin: 1.25rem 0;
+    }
+
+    .variant-tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 0;
+    }
+
+    .variant-tab {
+      padding: 0.45rem 1rem;
+      font-size: 0.73rem;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      cursor: pointer;
+      border: 1px solid transparent;
+      border-bottom: none;
+      border-radius: var(--radius) var(--radius) 0 0;
+      background: transparent;
+      transition: color 0.15s, background 0.15s;
+      user-select: none;
+    }
+
+    .variant-tab:hover { color: var(--accent); background: rgba(88,166,255,0.05); }
+
+    .variant-tab.active {
+      color: var(--accent);
+      background: var(--bg-secondary);
+      border-color: var(--border);
+      font-weight: 600;
+    }
+
+    .variant-panel {
+      display: none;
+    }
+
+    .variant-panel.active {
+      display: block;
+    }
+
+    /* ── Callout boxes ── */
+    .callout {
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      margin: 1rem 0;
+      font-size: 0.84rem;
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .callout-icon {
+      flex-shrink: 0;
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+
+    .callout-info {
+      background: rgba(88,166,255,0.07);
+      border: 1px solid rgba(88,166,255,0.2);
+    }
+
+    .callout-warn {
+      background: rgba(218,54,51,0.07);
+      border: 1px solid rgba(218,54,51,0.25);
+    }
+
+    .callout-tip {
+      background: rgba(35,134,54,0.07);
+      border: 1px solid rgba(35,134,54,0.25);
+    }
+
+    .callout-body p { margin: 0; font-size: 0.84rem; }
+    .callout-body strong { color: #e6edf3; }
+
+    /* ── Red flags box ── */
+    .red-flags {
+      background: rgba(218,54,51,0.07);
+      border: 1px solid rgba(248,81,73,0.25);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      margin: 1.25rem 0;
+    }
+
+    .red-flags-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--warning-text);
+      margin-bottom: 0.6rem;
+    }
+
+    .red-flags ul {
+      margin: 0;
+      padding-left: 1.25rem;
+    }
+
+    .red-flags li {
+      color: var(--text-muted);
+      font-size: 0.84rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .red-flags li strong { color: var(--warning-text); }
+
+    /* ── Checklist ── */
+    .checklist {
+      list-style: none;
+      padding: 0;
+      margin: 1rem 0;
+    }
+
+    .checklist li {
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-start;
+      padding: 0.65rem 1rem;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.84rem;
+    }
+
+    .checklist li:last-child { border-bottom: none; }
+
+    .checklist li:first-child { border-top: 1px solid var(--border); }
+
+    .check-num {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.5rem;
+      height: 1.5rem;
+      border-radius: 50%;
+      background: var(--accent-dim);
+      color: #e6edf3;
+      font-size: 0.65rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 0.1rem;
+    }
+
+    .check-body { flex: 1; }
+
+    .check-cmd {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--success-text);
+      background: rgba(35,134,54,0.08);
+      border: 1px solid rgba(63,185,80,0.2);
+      border-radius: 3px;
+      padding: 0.15rem 0.55rem;
+      margin: 0.2rem 0 0.1rem;
+    }
+
+    .check-desc {
+      color: var(--text-muted);
+      font-size: 0.79rem;
+      margin: 0.15rem 0 0;
+    }
+
+    /* ── Badge ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.67rem;
+      padding: 0.2rem 0.55rem;
+      border-radius: 20px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+
+    .badge-blue   { background: rgba(88,166,255,0.12); color: var(--accent); border: 1px solid rgba(88,166,255,0.25); }
+    .badge-green  { background: rgba(35,134,54,0.15);  color: var(--success-text); border: 1px solid rgba(63,185,80,0.25); }
+    .badge-yellow { background: rgba(227,179,65,0.12); color: var(--warn-soft); border: 1px solid rgba(227,179,65,0.25); }
+    .badge-purple { background: rgba(188,140,255,0.12); color: var(--purple); border: 1px solid rgba(188,140,255,0.25); }
+
+    /* ── Table of contents (page-internal) ── */
+    .page-toc {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      margin-bottom: 3rem;
+      font-size: 0.82rem;
+    }
+
+    .page-toc-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+      margin-bottom: 0.65rem;
+    }
+
+    .page-toc ol {
+      margin: 0;
+      padding-left: 1.25rem;
+    }
+
+    .page-toc li { margin-bottom: 0.25rem; }
+
+    .page-toc a { color: var(--text-muted); font-size: 0.82rem; }
+    .page-toc a:hover { color: var(--accent); }
+
+    /* ── Footer ── */
+    footer {
+      margin-top: 4rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.75rem;
+      color: var(--text-subtle);
+      text-align: center;
+    }
+
+    footer p { color: var(--text-subtle); font-size: 0.75rem; }
+    footer a { color: var(--accent); }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-subtle); }
+
+    /* ── Print styles ── */
+    @media print {
+      nav.topbar { display: none; }
+      .template-header { background: #eee; }
+      .copy-cue { display: none; }
+      pre { white-space: pre-wrap; word-break: break-all; border: 1px solid #ccc; }
+      .variant-panel { display: block !important; }
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 700px) {
+      main { padding: 1.5rem 1.1rem 4rem; }
+      nav.topbar { padding: 0 1rem; overflow-x: auto; }
+      .hero h1 { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Top nav bar ── -->
+<nav class="topbar" aria-label="Site navigation">
+  <a href="index.html" class="nav-brand">Orchestration Guide</a>
+  <ul class="nav-links">
+    <li><a href="index.html">Guide</a></li>
+    <li><a href="hooks.html">Hooks</a></li>
+    <li><a href="seeds.html">Seeds</a></li>
+    <li><a href="patterns.html">Patterns</a></li>
+    <li><a href="templates.html" class="active">Templates</a></li>
+  </ul>
+</nav>
+
+<main>
+
+  <!-- Hero -->
+  <header class="hero" id="top">
+    <p class="hero-eyebrow">Claude Code &middot; Copy-Paste Starter Kit</p>
+    <h1>Templates</h1>
+    <p class="subtitle">Every template on this page is ready to copy directly into your terminal or editor.</p>
+    <div class="byline">5 template sections &middot; fill in the bracketed placeholders &middot; April 2026</div>
+  </header>
+
+  <!-- Page TOC -->
+  <nav class="page-toc" aria-label="Page contents">
+    <div class="page-toc-label">On this page</div>
+    <ol>
+      <li><a href="#claude-md">1 — CLAUDE.md Starter Template</a></li>
+      <li><a href="#dispatch">2 — Agent Dispatch Prompt Template</a></li>
+      <li><a href="#seed-frontmatter">3 — Seed Frontmatter Template</a></li>
+      <li><a href="#verification">4 — Verification Checklist Template</a></li>
+      <li><a href="#convergence-ledger">5 — Convergence Ledger Entry Template</a></li>
+    </ol>
+  </nav>
+
+  <!-- ── Section 1: CLAUDE.md ── -->
+  <section id="claude-md">
+    <h2><span class="section-num">1</span> CLAUDE.md Starter Template</h2>
+    <p class="section-desc">
+      CLAUDE.md is the persistent instruction file Claude Code reads at the start of every session.
+      It is the single highest-leverage file in any repo — it converts session-to-session knowledge drift
+      into zero-drift automation. Every section below is required; none are optional.
+    </p>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">i</span>
+      <div class="callout-body">
+        <p><strong>Placement:</strong> commit CLAUDE.md to the root of every repo you use with Claude Code.
+        For a monorepo, also place sub-CLAUDEs in any subdirectory that has its own build system or language.</p>
+      </div>
+    </div>
+
+    <h3>Minimal Template</h3>
+    <p>Fill in every <code>[PLACEHOLDER]</code>. Delete comments before committing — they are for orientation only.</p>
+
+    <article>
+      <div class="template-block" id="tmpl-claude-md-base">
+        <div class="template-header">
+          <span class="template-filename">CLAUDE.md</span>
+          <span class="template-label">minimal template &middot; ~30 lines</span>
+          <button class="copy-cue" onclick="copyBlock('tmpl-claude-md-base')">copy</button>
+        </div>
+        <pre><code><span class="cmt"># [PROJECT NAME]</span>
+
+<span class="cmt">## Project Overview</span>
+<span class="cmt"># What this repo is, who runs it, what problem it solves.</span>
+<span class="cmt"># Include: primary language(s), stack, and any critical context</span>
+<span class="cmt"># a new session agent needs to not make wrong assumptions.</span>
+Primary language: [Go / TypeScript / Python / Rust]
+Stack: [e.g. Svelte 5 frontend, Go backend, PostgreSQL]
+Owner: [team or person]
+Purpose: [one sentence]
+
+<span class="cmt">## Build &amp; Test Commands</span>
+<span class="cmt"># These are the exact commands Claude runs after every code change.</span>
+<span class="cmt"># Never use vague commands like "run tests" — list the exact strings.</span>
+Build: [e.g. go build ./...]
+Test:  [e.g. go test ./... or npm run test]
+Lint:  [e.g. golangci-lint run or npm run lint]
+Dev:   [e.g. wrangler dev or npm run dev]
+
+<span class="cmt">## Conventions</span>
+<span class="cmt"># List 3–5 non-obvious conventions that differ from language defaults.</span>
+<span class="cmt"># Each entry should be one line: what to DO, not what NOT to do.</span>
+- [e.g. Event handlers: onclick={handler} — NOT on:click (Svelte 4, removed)]
+- [e.g. Always return HTTP 501 for unimplemented interface methods]
+- [e.g. Use module-relative paths, not process.cwd(), for asset loading]
+
+<span class="cmt">## Debugging Protocol</span>
+<span class="cmt"># These three rules prevent the most common time-wasting loops.</span>
+- Root-cause first: trace the bug to its origin line before writing any fix.
+- Config-before-code: check .env, settings.json, wrangler.toml for stale URLs/keys BEFORE debugging code.
+- Full suite: never report a fix complete without running the full test suite (not just the failing test).
+
+<span class="cmt">## Architecture Patterns</span>
+<span class="cmt"># Add project-specific patterns here as you discover them.</span>
+<span class="cmt"># Examples: routing conventions, state management, API contract rules.</span>
+[Add patterns as you build — this section grows over time]</code></pre>
+      </div>
+    </article>
+
+    <h3>Filled Example — Go + Svelte 5 Project</h3>
+    <p>This is what a mature CLAUDE.md looks like after a few sessions of use.</p>
+
+    <article>
+      <div class="template-block" id="tmpl-claude-md-filled">
+        <div class="template-header">
+          <span class="template-filename">CLAUDE.md — example: AgenticGateway</span>
+          <span class="template-label">filled example</span>
+          <button class="copy-cue" onclick="copyBlock('tmpl-claude-md-filled')">copy</button>
+        </div>
+        <pre><code><span class="cmt"># AgenticGateway</span>
+
+<span class="cmt">## Project Overview</span>
+Primary language: Go (backend), TypeScript/Svelte 5 (dashboard frontend)
+Stack: Go HTTP server, D1 (SQLite), Cloudflare Workers, Svelte 5
+Owner: DojoGenesis
+Purpose: LLM request routing, skill execution, and RAG pipeline for the Dojo platform.
+Default port: 7340 (not 8080 — the CLI connects at localhost:7340).
+
+<span class="cmt">## Build &amp; Test Commands</span>
+Build: go build ./...
+Test:  go test ./...
+Dev:   wrangler dev (run from repo root, not subdirectory)
+Note:  Walk up from edited file to find go.mod root before running build.
+
+<span class="cmt">## Conventions</span>
+- Svelte 5: onclick={handler} — NEVER on:click (compiler rejects on: directives)
+- Return HTTP 501 for unimplemented interface methods — gaps visible, not silent
+- SSE stores: batch with requestAnimationFrame — per-chunk store updates cause UI hangs
+- Routing: grep all router.GET/POST calls before touching any handler (two handler paths exist on different routes)
+- Context injection: thread per-request config via context.Context, not function args
+
+<span class="cmt">## Debugging Protocol</span>
+- Root-cause first: identify the exact line where the problem originates, not where symptom appears.
+- Config-before-code: check settings.json, .env, wrangler.toml for stale URLs before debugging code. 3+ sessions burned on this.
+- Full suite: run go test ./... (not a single test file) before marking any fix complete.
+
+<span class="cmt">## Architecture Patterns</span>
+- Gateway has TWO independent handler paths on different routes — audit all router.* calls before any routing fix.
+- CLI pushes API keys to gateway on startup; gateway hot-registers providers on receipt.
+- Explicit provider/model in a request always wins over content-based intent classifier routing.
+- D1Syncer injection pending in Wave 2C — stub returns 501 until wired.
+- Sub-agents start cold — they do not inherit memory or session context. Always pass full context in the prompt.</code></pre>
+      </div>
+    </article>
+  </section>
+
+  <!-- ── Section 2: Agent Dispatch Prompt ── -->
+  <section id="dispatch">
+    <h2><span class="section-num">2</span> Agent Dispatch Prompt Template</h2>
+    <p class="section-desc">
+      This is the exact text you type to dispatch a parallel agent. The file manifest block is the most critical
+      part — it prevents agents from overwriting each other's work. The quality bar section sets the standard
+      without writing the implementation for the agent.
+    </p>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">!</span>
+      <div class="callout-body">
+        <p><strong>Never skip the file manifest.</strong> Without it, two parallel agents will write to the same
+        file and one will silently overwrite the other. Every agent dispatch must name its owned files explicitly.</p>
+      </div>
+    </div>
+
+    <div class="variant-set" id="dispatch-variants">
+      <div class="variant-tabs" role="tablist">
+        <button class="variant-tab active" role="tab" onclick="switchTab('dispatch-variants', 0)">a) Simple</button>
+        <button class="variant-tab" role="tab" onclick="switchTab('dispatch-variants', 1)">b) Medium</button>
+        <button class="variant-tab" role="tab" onclick="switchTab('dispatch-variants', 2)">c) Complex</button>
+      </div>
+
+      <!-- Variant a: Simple -->
+      <div class="variant-panel active">
+        <div class="template-block" id="tmpl-dispatch-a">
+          <div class="template-header">
+            <span class="template-filename">dispatch prompt — simple (single file)</span>
+            <span class="badge badge-green">beginner</span>
+            <button class="copy-cue" onclick="copyBlock('tmpl-dispatch-a')">copy</button>
+          </div>
+          <pre><code>You are implementing a single focused task. Read the context files listed below before writing anything.
+
+<span class="var">FILE MANIFEST</span>
+You own ONLY these files:
+  - [path/to/target-file.go]
+Do NOT modify any other files. Do NOT create new files outside this list.
+
+<span class="var">CONTEXT — read these first</span>
+  - [path/to/interface-or-spec.go]  — the interface you must satisfy
+  - [path/to/existing-similar.go]   — existing implementation to match style
+
+<span class="var">REQUIREMENTS</span>
+Implement [FunctionName] in [path/to/target-file.go].
+The function must:
+  1. [Requirement 1]
+  2. [Requirement 2]
+  3. [Requirement 3]
+
+<span class="var">CONSTRAINTS</span>
+  - Do NOT change function signatures
+  - Do NOT add new dependencies without approval
+  - Match the naming and style of existing code in this repo
+
+<span class="var">QUALITY BAR</span>
+The implementation is done when: it compiles with `go build ./...` and
+passes `go test ./...` with no new failures.
+
+<span class="var">OUTPUT</span>
+Write the implementation. Then run `go build ./...` and report the result.</code></pre>
+        </div>
+      </div>
+
+      <!-- Variant b: Medium -->
+      <div class="variant-panel">
+        <div class="template-block" id="tmpl-dispatch-b">
+          <div class="template-header">
+            <span class="template-filename">dispatch prompt — medium (multi-file feature)</span>
+            <span class="badge badge-yellow">intermediate</span>
+            <button class="copy-cue" onclick="copyBlock('tmpl-dispatch-b')">copy</button>
+          </div>
+          <pre><code>You are implementing a complete feature. Read all context files before writing anything.
+You are working in parallel with other agents — your file manifest is your exclusive territory.
+
+<span class="var">FILE MANIFEST</span>
+You own ONLY these files (create them if they don't exist):
+  - [server/handlers/handle_[feature].go]
+  - [server/handlers/handle_[feature]_test.go]
+  - [server/[feature].go]
+Do NOT modify: main.go, router.go, or any file not listed above.
+
+<span class="var">CONTEXT — read these first</span>
+  - [server/handlers/handle_existing.go]  — handler pattern to follow exactly
+  - [server/types.go]                     — shared types
+  - [server/database/db.go]               — database interface (use these methods only)
+  - README or spec file: [path/to/spec.md]
+
+<span class="var">REQUIREMENTS</span>
+Implement the [FeatureName] feature:
+  1. Handler: POST /api/[feature] — accepts [RequestType], returns [ResponseType]
+  2. Service layer: [feature].go — business logic, no HTTP concerns
+  3. Tests: at least 3 table-driven test cases covering happy path, missing field, and not-found
+
+<span class="var">CONSTRAINTS</span>
+  - The handler registers itself — do NOT modify the router file
+  - Return HTTP 501 for any method you do not implement (makes gaps visible)
+  - Use context.Context as first param on all service functions
+  - No new packages — use only what is already imported in existing handlers
+
+<span class="var">QUALITY BAR</span>
+Done when:
+  1. `go build ./...` exits 0
+  2. `go test ./server/handlers/...` exits 0
+  3. The new handler is reachable and returns a non-500 response to a valid request
+
+<span class="var">OUTPUT</span>
+Write all files. Then run `go build ./...` and `go test ./server/handlers/...`.
+Report exact output of both commands. If either fails, fix before reporting done.</code></pre>
+        </div>
+      </div>
+
+      <!-- Variant c: Complex -->
+      <div class="variant-panel">
+        <div class="template-block" id="tmpl-dispatch-c">
+          <div class="template-header">
+            <span class="template-filename">dispatch prompt — complex (cross-module with test requirements)</span>
+            <span class="badge badge-purple">advanced</span>
+            <button class="copy-cue" onclick="copyBlock('tmpl-dispatch-c')">copy</button>
+          </div>
+          <pre><code>You are Track [A/B/C] of a parallel implementation. Tracks A, B, C run simultaneously.
+Your file manifest is your exclusive territory — writes outside it will cause merge conflicts.
+You do NOT have session context from the main thread. Everything you need is below.
+
+<span class="var">FILE MANIFEST — Track [A/B/C] exclusive ownership</span>
+You own ONLY:
+  - [module1/package/file1.go]
+  - [module1/package/file1_test.go]
+  - [module1/package/types.go]        — create if missing
+Do NOT touch: [module2/], [module3/], main.go, any *_test.go outside your package.
+
+<span class="var">INTERFACE CONTRACT — agreed with other tracks before dispatch</span>
+Your package must expose:
+  type [TypeName] struct { ... }         // field list
+  func New[TypeName]([params]) *[TypeName]
+  func (t *[TypeName]) [Method1]() error
+  func (t *[TypeName]) [Method2](ctx context.Context, [params]) ([ReturnType], error)
+Track B will import this package. Your interface is frozen — do not change signatures.
+
+<span class="var">CONTEXT — read these files before writing</span>
+  - [adjacent/similar.go]         — style reference (match exactly)
+  - [module1/go.mod]              — module path (your import paths must match)
+  - [spec/[feature]-spec.md]      — full feature specification
+
+<span class="var">REQUIREMENTS</span>
+  1. Implement [TypeName] as specified in the interface contract above
+  2. Write table-driven tests covering: happy path, nil input, context cancellation, error propagation
+  3. All exported symbols must have godoc comments
+  4. Use structured logging (slog) — no fmt.Println in production code
+
+<span class="var">CONSTRAINTS</span>
+  - Build must pass from the go.mod root of [module1/] — run from there, not the file's directory
+  - No new third-party dependencies — use only stdlib + what is already in go.mod
+  - Return 501 sentinel errors for any interface method that cannot be fully implemented in this track
+  - Do not import from Track B or Track C packages (they don't exist yet)
+
+<span class="var">QUALITY BAR</span>
+Track [A/B/C] is complete when ALL of the following are true:
+  1. `go build ./...` from [module1/] exits 0 with zero errors
+  2. `go test ./[package]/...` exits 0 — all tests pass
+  3. `go vet ./...` exits 0
+  4. The interface contract methods are present and correctly typed (grep to verify)
+  5. Every exported symbol has a godoc comment
+
+<span class="var">VERIFICATION COMMANDS — run these and paste output</span>
+  cd [module1/] &amp;&amp; go build ./... &amp;&amp; go test ./... &amp;&amp; go vet ./...
+
+<span class="var">OUTPUT FORMAT</span>
+After writing all files:
+  1. Run the verification commands above
+  2. Paste the exact output (not a summary)
+  3. State: TRACK [A/B/C] COMPLETE or TRACK [A/B/C] BLOCKED: [reason]</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">+</span>
+      <div class="callout-body">
+        <p><strong>After dispatching 3+ agents:</strong> use TodoWrite to track per-agent status.
+        Verify EACH agent's output independently — never trust agent self-reports.
+        Run <code>git status</code> and grep for expected symbols after each agent completes.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Section 3: Seed Frontmatter ── -->
+  <section id="seed-frontmatter">
+    <h2><span class="section-num">3</span> Seed Frontmatter Template</h2>
+    <p class="section-desc">
+      A seed is a compressed unit of hard-won knowledge — a pattern extracted from a real failure or success
+      and written so it can be applied without re-learning the lesson. Seeds live in your MEMORY.md index
+      and are applied via <code>/apply-seed</code> in future sessions.
+    </p>
+
+    <h3>Template</h3>
+
+    <article>
+      <div class="template-block" id="tmpl-seed-template">
+        <div class="template-header">
+          <span class="template-filename">seed-[slug].md</span>
+          <span class="template-label">seed format</span>
+          <button class="copy-cue" onclick="copyBlock('tmpl-seed-template')">copy</button>
+        </div>
+        <pre><code><span class="cmt">---</span>
+<span class="var">name:</span> <span class="str">[Short noun phrase — the pattern's name]</span>
+<span class="var">description:</span> <span class="str">[One sentence: what problem this solves]</span>
+<span class="var">type:</span> <span class="str">[debugging | architecture | agent | workflow | config]</span>
+<span class="cmt">---</span>
+
+<span class="cmt"># [Same as name above]</span>
+
+[2–4 sentences describing the pattern in plain language. What situation triggers it?
+What does applying it look like in practice? Write as if explaining to your future
+self who has forgotten this session entirely.]
+
+<span class="kw">**Why:**</span> [The root cause or underlying dynamic that makes this pattern necessary.
+Not "because it was broken" — the structural reason it keeps happening.]
+
+<span class="kw">**How to apply:**</span>
+1. [First concrete action]
+2. [Second concrete action]
+3. [Third concrete action — keep to 3–5 steps max]
+
+<span class="kw">**Evidence:**</span> [What happened in the session that generated this seed.
+Commit SHA, file path, or error message if available. Specificity matters —
+vague evidence makes the seed untrustworthy.]
+
+<span class="kw">**Diagnostic:**</span> [A question or signal that tells you this seed applies to your current situation.
+E.g.: "If you are about to edit a handler file without first grepping all router.* calls — apply this seed."]</code></pre>
+      </div>
+    </article>
+
+    <h3>Filled Example — from a real debugging session</h3>
+
+    <article>
+      <div class="template-block" id="tmpl-seed-filled">
+        <div class="template-header">
+          <span class="template-filename">seed-two-handler-trap.md</span>
+          <span class="template-label">filled example</span>
+          <button class="copy-cue" onclick="copyBlock('tmpl-seed-filled')">copy</button>
+        </div>
+        <pre><code><span class="cmt">---</span>
+<span class="var">name:</span> <span class="str">Two-Handler Trap</span>
+<span class="var">description:</span> <span class="str">Audit ALL handler files before fixing routing bugs; a codebase can have two separate handler paths on different routes pointing to the same resource.</span>
+<span class="var">type:</span> <span class="str">debugging</span>
+<span class="cmt">---</span>
+
+<span class="cmt"># Two-Handler Trap</span>
+
+When routing bugs appear, the instinct is to fix the one handler you can see.
+But if the codebase has grown through multiple contributors or refactoring passes,
+there may be a second handler registered on a different route for the same resource.
+Patching one while the other is live produces inconsistent behavior that is nearly
+impossible to reproduce in tests.
+
+<span class="kw">**Why:**</span> Routers accumulate registrations incrementally. A refactor that moves a handler
+to a new path often leaves the old registration in place. No compiler catches a double
+registration — it silently routes some requests to v1, others to v2.
+
+<span class="kw">**How to apply:**</span>
+1. Before touching any handler: grep all router.GET/POST/PUT/DELETE/Handle calls across ALL files.
+2. Build a map: route path → handler function → file. Look for duplicates on the same HTTP method.
+3. Decide which registration is canonical before writing a single line of fix.
+4. Remove the orphan registration, not just patch the handler.
+5. Run integration tests against the actual port — unit tests cannot catch double-registration.
+
+<span class="kw">**Evidence:**</span> AgenticGatewayByDojoGenesis — two independent chat handler files existed on different
+routes (/api/chat and /v1/chat). Patching handle_chat.go had no effect because traffic
+was routing to handle_chat_v2.go. Discovered Apr 9, 2026 after 90 minutes of misdiagnosis.
+See seed commit: two-handler-trap discovery session.
+
+<span class="kw">**Diagnostic:**</span> If you are about to edit a handler file because a route is misbehaving, and you
+have NOT yet run `grep -r "router\." --include="*.go" | grep "[your-path]"` across every
+file in the repo — apply this seed before touching any code.</code></pre>
+      </div>
+    </article>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">i</span>
+      <div class="callout-body">
+        <p><strong>When to write a seed:</strong> After any session where you wasted 30+ minutes on a mistake you
+        could have avoided. The test: "Would this pattern have prevented that loss?" If yes, write the seed
+        before the session ends. Seeds written after the session rarely capture the exact diagnostic.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Section 4: Verification Checklist ── -->
+  <section id="verification">
+    <h2><span class="section-num">4</span> Verification Checklist Template</h2>
+    <p class="section-desc">
+      Run this checklist after every agent completes. Agents frequently report "done" without persisting
+      writes, or persist writes that do not compile. The checklist takes under two minutes and catches
+      the most common failure modes before they compound.
+    </p>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">!</span>
+      <div class="callout-body">
+        <p><strong>Agent "done" is not done</strong> until independently verified.
+        Never mark a task complete based on an agent's self-report alone.
+        This checklist is your gate.</p>
+      </div>
+    </div>
+
+    <article>
+      <div class="template-block" id="tmpl-verification">
+        <div class="template-header">
+          <span class="template-filename">post-agent verification sweep</span>
+          <span class="template-label">run after every agent</span>
+          <button class="copy-cue" onclick="copyBlock('tmpl-verification')">copy</button>
+        </div>
+        <pre><code><span class="cmt"># Post-Agent Verification Sweep</span>
+<span class="cmt"># Run these commands in order. Each one gates the next.</span>
+
+<span class="cmt"># 1. Are the expected files present/modified?</span>
+git status
+
+<span class="cmt"># 2. Do change counts match what was requested?</span>
+git diff --stat
+
+<span class="cmt"># 3. Does the implementation contain the expected symbols?</span>
+grep -r "[ExpectedFunctionName]" [path/to/package/]
+
+<span class="cmt"># 4. Does it compile? (Go example — replace with stack equivalent)</span>
+go build ./...
+
+<span class="cmt"># 5. Do tests pass?</span>
+go test ./...
+
+<span class="cmt"># 6. Read the actual implementation — does it make sense?</span>
+<span class="cmt"># Do NOT skip this step. Agents can produce plausible-looking but wrong code.</span>
+cat [path/to/new-file.go] | head -60</code></pre>
+      </div>
+    </article>
+
+    <h3>As a Numbered Checklist</h3>
+
+    <ol class="checklist" aria-label="Post-agent verification steps">
+      <li>
+        <span class="check-num">1</span>
+        <div class="check-body">
+          <code class="check-cmd">git status</code>
+          <p class="check-desc">Confirm the expected files appear as Modified or new Untracked. If the agent reported writing 4 files and only 1 is modified, the agent did not persist its writes — dispatch again with explicit write instructions.</p>
+        </div>
+      </li>
+      <li>
+        <span class="check-num">2</span>
+        <div class="check-body">
+          <code class="check-cmd">git diff --stat</code>
+          <p class="check-desc">Change counts should be proportional to the task. A feature implementation showing +3 lines is a red flag. A refactor showing +900 lines is a red flag. Verify the magnitude matches the request.</p>
+        </div>
+      </li>
+      <li>
+        <span class="check-num">3</span>
+        <div class="check-body">
+          <code class="check-cmd">grep -r "[ExpectedFunctionName]" [path/to/package/]</code>
+          <p class="check-desc">Check that the implementation contains the specific symbols you asked for. Agents sometimes write structurally valid code that implements the wrong interface or omits a key method.</p>
+        </div>
+      </li>
+      <li>
+        <span class="check-num">4</span>
+        <div class="check-body">
+          <code class="check-cmd">go build ./...</code>
+          <p class="check-desc">(Replace with your stack's equivalent: <code>cargo check</code>, <code>tsc --noEmit</code>, <code>npm run build</code>.) The compilation gate is the minimum bar for correctness. A change that does not compile is not done.</p>
+        </div>
+      </li>
+      <li>
+        <span class="check-num">5</span>
+        <div class="check-body">
+          <code class="check-cmd">go test ./...</code>
+          <p class="check-desc">Run the full test suite — not just the one test that was failing. Agents frequently fix the targeted test while introducing a regression in an adjacent test. The full suite is the only honest gate.</p>
+        </div>
+      </li>
+      <li>
+        <span class="check-num">6</span>
+        <div class="check-body">
+          <code class="check-cmd">Read the actual files</code>
+          <p class="check-desc">Open the written files and read enough to verify the logic makes sense. Compilation and tests can pass while the implementation is technically wrong. This step is non-automatable.</p>
+        </div>
+      </li>
+    </ol>
+
+    <div class="red-flags">
+      <div class="red-flags-label">Red Flags — signs an agent falsely reported completion</div>
+      <ul>
+        <li><strong>git status is clean</strong> after an agent claims to have written 3 new files — the writes were not persisted (common with worktree isolation or session timeouts).</li>
+        <li><strong>Only the targeted test passes</strong> but the agent ran no others — "all tests pass" was a false claim.</li>
+        <li><strong>The implementation is ~5 lines</strong> for a feature that should require 50+ — the agent wrote a stub and called it done.</li>
+        <li><strong>Function bodies contain <code>panic("not implemented")</code></strong> or empty returns — the agent scaffolded, not implemented.</li>
+        <li><strong>No error handling</strong> in any branch of a Go function — the agent skipped error propagation to save tokens.</li>
+        <li><strong>The agent reports a build error, then immediately says "fixed"</strong> without showing the fix — the fix was hallucinated.</li>
+        <li><strong>Import paths reference packages that do not exist</strong> in the go.mod — the agent invented a dependency.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ── Section 5: Convergence Ledger ── -->
+  <section id="convergence-ledger">
+    <h2><span class="section-num">5</span> Convergence Ledger Entry Template</h2>
+    <p class="section-desc">
+      The convergence ledger is a markdown file (<code>~/.claude/convergence-ledger.md</code>) that records
+      the state of all active repos after each convergence gate. A convergence gate fires when drift
+      accumulates: YELLOW at 10+ dirty files or 4+ sessions since last commit; RED at 25+ or 6+.
+      Each entry below is one gate event.
+    </p>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">i</span>
+      <div class="callout-body">
+        <p><strong>When to write an entry:</strong> After every convergence sweep — when you commit a batch of work,
+        triage open items, and assess release readiness. The entry is not a log of what you did;
+        it is a snapshot of where you are and what decisions were made.</p>
+      </div>
+    </div>
+
+    <h3>Entry Template</h3>
+
+    <article>
+      <div class="template-block" id="tmpl-ledger">
+        <div class="template-header">
+          <span class="template-filename">~/.claude/convergence-ledger.md — entry</span>
+          <span class="template-label">convergence gate format</span>
+          <button class="copy-cue" onclick="copyBlock('tmpl-ledger')">copy</button>
+        </div>
+        <pre><code><span class="cmt">## Convergence — YYYY-MM-DD</span>
+
+- <span class="var">Sessions consumed:</span> N   <span class="cmt"># sessions since last ledger entry</span>
+- <span class="var">Drift severity:</span> YELLOW  <span class="cmt"># YELLOW (10+ dirty files or 4+ sessions) | RED (25+ or 6+)</span>
+- <span class="var">Commits landed:</span> N across M repos
+
+- <span class="var">Validations:</span> N pass, M fail
+  <span class="cmt"># List each failure briefly:</span>
+  - FAIL: [repo]: [what failed] — [blocked / will fix in next session]
+  - PASS: [repo]: go build ./... + go test ./...
+
+- <span class="var">Open items:</span>
+  - Next (will tackle next session): [item 1], [item 2]
+  - Parking lot (acknowledged, not urgent): [item A], [item B]
+  - Killed (will not do): [item X] — [reason it was cut]
+
+- <span class="var">Release readiness:</span>
+  - [repo@version]: READY
+  - [repo@version]: BLOCKED([reason — specific, not vague])
+  - [repo@version]: IN PROGRESS([current milestone])
+
+- <span class="var">Deploy retro:</span>
+  <span class="cmt"># What surprised you in this convergence sweep?</span>
+  <span class="cmt"># What should become a seed?</span>
+  - Surprised by: [observation]
+  - Seed candidate: [pattern name — write the full seed separately]
+
+- <span class="var">Strategic assessment:</span>
+  [One paragraph. Is the project on track? Is the scope creeping?
+  What is the highest-leverage next move? Write this as if briefing
+  your future self after a 2-week break from the project.]</code></pre>
+      </div>
+    </article>
+
+    <h3>Filled Example</h3>
+
+    <article>
+      <div class="template-block" id="tmpl-ledger-filled">
+        <div class="template-header">
+          <span class="template-filename">convergence-ledger.md — example entry</span>
+          <span class="template-label">filled example</span>
+          <button class="copy-cue" onclick="copyBlock('tmpl-ledger-filled')">copy</button>
+        </div>
+        <pre><code><span class="cmt">## Convergence — 2026-04-14</span>
+
+- <span class="var">Sessions consumed:</span> 4
+- <span class="var">Drift severity:</span> YELLOW (13 dirty files, 4 sessions since Apr 10 commit)
+- <span class="var">Commits landed:</span> 9 across 3 repos (gateway: 4, cli: 3, pdi: 2)
+
+- <span class="var">Validations:</span> 5 pass, 1 fail
+  - FAIL: pdi: BLS LAUS fetch returns empty — rate-limited by API; script logic is correct, re-run after 24h reset
+  - PASS: gateway: go build ./... + go test ./... clean at 96aa95d
+  - PASS: cli: go build ./... clean at cc81104
+  - PASS: pdi: PostGIS 22,949 rows loaded, all non-BLS indicators present
+  - PASS: gateway: Wave 2C RAG handler returns 200 on POST /api/documents
+
+- <span class="var">Open items:</span>
+  - Next: gateway protocol module merge (2→1); PDI BLS re-run after rate limit reset
+  - Parking lot: goreleaser `brews` → `homebrew_casks` deprecation warning; HTMLCraft v3.5 Polish
+  - Killed: DojoChat new features — hibernated, resume after CLI ships (decision Apr 9)
+
+- <span class="var">Release readiness:</span>
+  - gateway@v3.0.0: READY (Wave 1+2A+2B+2C complete)
+  - cli@v1.0.0: READY (Homebrew live at DojoGenesis/tap)
+  - pdi@HEAD: BLOCKED(BLS LAUS data null — re-run pending)
+  - htmlcraft@v3.6: READY (140 tests pass, backend frozen)
+
+- <span class="var">Deploy retro:</span>
+  - Surprised by: PDI Python pipeline had 14 columns richer than the canonical source. Audit-before-sync seed proved its value.
+  - Seed candidate: Government API Batch Silence — batch params silently drop series; single-series diagnostic first
+
+- <span class="var">Strategic assessment:</span>
+  Gateway and CLI are in a stable release state. The primary risk is the PDI BLS gap — it
+  is a data gap, not a code gap, and resolves automatically after the rate limit resets.
+  The highest-leverage next move is the gateway protocol module merge: it reduces surface area
+  before adding new consumers, and is a 1-session task with zero integration risk. After that,
+  resume HTMLCraft v3.5 Polish which has been blocked by higher-priority work since April 9.
+  DojoChat hibernation remains the right call — premature resumption would fragment focus
+  at exactly the moment CLI distribution needs maintenance attention.</code></pre>
+      </div>
+    </article>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">+</span>
+      <div class="callout-body">
+        <p><strong>Ledger discipline:</strong> The strategic assessment paragraph is the most valuable part.
+        A ledger entry without it is just a log. Write the assessment as if you will not return to this
+        project for two weeks — because you might not.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>
+      Orchestration Guide &middot; <a href="index.html">Guide</a> &middot;
+      <a href="https://github.com/DojoGenesis/orchestration-guide">GitHub</a>
+    </p>
+    <p style="margin-top:0.4rem">Extracted from 208 sessions &middot; 432 hours &middot; 469 agent dispatches</p>
+  </footer>
+
+</main>
+
+<script>
+  /* Copy button */
+  function copyBlock(id) {
+    const block = document.getElementById(id);
+    if (!block) return;
+    const pre = block.querySelector('pre');
+    if (!pre) return;
+    const text = pre.innerText;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = block.querySelector('.copy-cue');
+      if (!btn) return;
+      btn.textContent = 'copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'copy';
+        btn.classList.remove('copied');
+      }, 2000);
+    }).catch(() => {
+      /* fallback for non-https environments */
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      const btn = block.querySelector('.copy-cue');
+      if (btn) {
+        btn.textContent = 'copied!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = 'copy';
+          btn.classList.remove('copied');
+        }, 2000);
+      }
+    });
+  }
+
+  /* Variant tabs */
+  function switchTab(setId, index) {
+    const set = document.getElementById(setId);
+    if (!set) return;
+    const tabs = set.querySelectorAll('.variant-tab');
+    const panels = set.querySelectorAll('.variant-panel');
+    tabs.forEach((t, i) => t.classList.toggle('active', i === index));
+    panels.forEach((p, i) => p.classList.toggle('active', i === index));
+  }
+</script>
+
+</body>
+</html>

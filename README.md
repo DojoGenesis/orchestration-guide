@@ -6,15 +6,15 @@ A progressive curriculum for Claude Code orchestration mastery — from single-r
 
 ## What is this?
 
-A standalone teaching document extracted from 208 sessions and 469 agent dispatches across 6 repositories. It covers five levels of orchestration skill:
+A 5-page teaching site extracted from 208 sessions and 469 agent dispatches across 6 repositories.
 
-| Level | Focus | Key Concept |
-|-------|-------|-------------|
-| 0 | Foundation | CLAUDE.md as project constitution |
-| 1 | Single-Repo | Compilation gate before every commit |
-| 2 | Multi-Agent | Zero-overlap file manifests |
-| 3 | Multi-Repo | DAG of deliverables in topological order |
-| 4 | Governance | Convergence gates and seed extraction |
+| Page | What it teaches |
+|------|-----------------|
+| [**Guide**](https://dojogenesis.github.io/orchestration-guide/) | 5-level curriculum, mental models, first session script, anti-patterns |
+| [**Templates**](https://dojogenesis.github.io/orchestration-guide/templates.html) | Copy-paste starters: CLAUDE.md, dispatch prompts, seed format, verification checklist |
+| [**Hooks**](https://dojogenesis.github.io/orchestration-guide/hooks.html) | Full cookbook: 18 hooks with scripts, settings.json wiring, build-your-own guide |
+| [**Seeds**](https://dojogenesis.github.io/orchestration-guide/seeds.html) | Browsable library of 95 validated pattern seeds, filterable by category |
+| [**Patterns**](https://dojogenesis.github.io/orchestration-guide/patterns.html) | Interactive selector: answer 5 questions, get the right orchestration pattern |
 
 ## For AI assistants
 

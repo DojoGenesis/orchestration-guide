@@ -1,0 +1,2455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hook Cookbook — Orchestration Guide</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:           #0d1117;
+      --bg-secondary: #161b22;
+      --bg-tertiary:  #21262d;
+      --border:       #30363d;
+      --text:         #c9d1d9;
+      --text-muted:   #8b949e;
+      --text-subtle:  #6e7681;
+      --accent:       #58a6ff;
+      --accent-dim:   #1f6feb;
+      --success:      #238636;
+      --success-text: #3fb950;
+      --warning:      #da3633;
+      --warning-text: #f85149;
+      --warn-soft:    #e3b341;
+      --purple:       #bc8cff;
+      --teal:         #39d353;
+      --font-mono:    'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+      --radius:       6px;
+      --content-max:  900px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; font-size: 15px; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-mono);
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    /* ── Top nav bar ── */
+    nav.topbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0;
+      padding: 0 2rem;
+      height: 3rem;
+    }
+
+    nav.topbar .nav-brand {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--accent);
+      text-decoration: none;
+      letter-spacing: 0.04em;
+      margin-right: 1.5rem;
+      white-space: nowrap;
+    }
+    nav.topbar .nav-brand:hover { color: #e6edf3; text-decoration: none; }
+
+    nav.topbar .nav-links {
+      display: flex;
+      gap: 0;
+      list-style: none;
+      align-items: center;
+    }
+
+    nav.topbar .nav-links a {
+      display: block;
+      padding: 0 0.9rem;
+      height: 3rem;
+      line-height: 3rem;
+      font-size: 0.73rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      border-bottom: 2px solid transparent;
+      transition: color 0.15s, border-color 0.15s;
+      white-space: nowrap;
+    }
+    nav.topbar .nav-links a:hover { color: var(--accent); border-bottom-color: var(--accent); text-decoration: none; }
+    nav.topbar .nav-links a.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* ── Layout ── */
+    main {
+      max-width: var(--content-max);
+      margin: 0 auto;
+      padding: 3rem 2.5rem 6rem;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 3rem 0 2.5rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 3.5rem;
+    }
+    .hero-eyebrow {
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1rem;
+    }
+    .hero h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      line-height: 1.2;
+      color: #e6edf3;
+      margin-bottom: 0.75rem;
+      letter-spacing: -0.02em;
+    }
+    .hero .subtitle {
+      font-size: 1rem;
+      color: var(--text-muted);
+      margin-bottom: 1.25rem;
+      font-weight: 300;
+    }
+    .hero .byline {
+      font-size: 0.72rem;
+      color: var(--text-subtle);
+      padding: 0.5rem 0.85rem;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      display: inline-block;
+    }
+
+    /* ── Sections ── */
+    section { margin-bottom: 4rem; }
+
+    section > h2 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #e6edf3;
+      margin-bottom: 0.35rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    section > h2 .section-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.6rem;
+      height: 1.6rem;
+      border-radius: 50%;
+      background: var(--accent-dim);
+      color: #e6edf3;
+      font-size: 0.75rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    section > .section-desc {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      margin: 0.5rem 0 1.75rem;
+    }
+
+    h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #e6edf3;
+      margin: 1.75rem 0 0.6rem;
+    }
+    h4 {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--warn-soft);
+      margin: 1.25rem 0 0.4rem;
+    }
+
+    p {
+      color: var(--text);
+      margin-bottom: 0.85rem;
+      font-size: 0.88rem;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    ul, ol {
+      padding-left: 1.5rem;
+      font-size: 0.88rem;
+      color: var(--text);
+      margin-bottom: 0.85rem;
+    }
+    li { margin-bottom: 0.3rem; }
+
+    /* ── Code blocks ── */
+    pre {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.1rem 1.25rem;
+      overflow-x: auto;
+      margin: 0.85rem 0 0.5rem;
+      font-size: 0.78rem;
+      line-height: 1.65;
+      position: relative;
+    }
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.83em;
+      background: var(--bg-tertiary);
+      padding: 0.15em 0.4em;
+      border-radius: 3px;
+      color: #e6edf3;
+    }
+    pre code {
+      background: none;
+      padding: 0;
+      font-size: inherit;
+      color: var(--text);
+    }
+
+    /* ── Copy button ── */
+    .pre-wrap { position: relative; }
+    .copy-btn {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      padding: 0.2rem 0.55rem;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+      z-index: 2;
+    }
+    .copy-btn:hover { color: var(--accent); border-color: var(--accent); }
+    .copy-btn.copied { color: var(--success-text); border-color: var(--success-text); }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.67rem;
+      padding: 0.2rem 0.55rem;
+      border-radius: 20px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+    .badge-blue   { background: rgba(88,166,255,0.12);  color: var(--accent);        border: 1px solid rgba(88,166,255,0.25); }
+    .badge-green  { background: rgba(35,134,54,0.15);   color: var(--success-text);  border: 1px solid rgba(63,185,80,0.25); }
+    .badge-red    { background: rgba(218,54,51,0.12);   color: var(--warning-text);  border: 1px solid rgba(248,81,73,0.25); }
+    .badge-purple { background: rgba(188,140,255,0.12); color: var(--purple);        border: 1px solid rgba(188,140,255,0.25); }
+    .badge-yellow { background: rgba(227,179,65,0.12);  color: var(--warn-soft);     border: 1px solid rgba(227,179,65,0.25); }
+    .badge-gray   { background: rgba(110,118,129,0.12); color: var(--text-muted);    border: 1px solid rgba(110,118,129,0.25); }
+
+    /* ── Hook cards ── */
+    .hook-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 1.25rem;
+      overflow: hidden;
+    }
+    .hook-card.blocking  { border-left: 3px solid var(--warning); }
+    .hook-card.informing { border-left: 3px solid var(--accent); }
+    .hook-card.injecting { border-left: 3px solid var(--success-text); }
+    .hook-card.stopping  { border-left: 3px solid var(--text-subtle); }
+    .hook-card.external  { border-left: 3px solid var(--purple); }
+
+    details {
+      overflow: hidden;
+    }
+    details[open] {}
+
+    summary {
+      padding: 0.85rem 1.1rem;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.88rem;
+      color: #e6edf3;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      list-style: none;
+      user-select: none;
+      transition: background 0.1s;
+      flex-wrap: wrap;
+    }
+    summary::-webkit-details-marker { display: none; }
+    summary:hover { background: var(--bg-tertiary); }
+    summary::before {
+      content: '▶';
+      font-size: 0.6rem;
+      color: var(--accent);
+      transition: transform 0.2s;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+    details[open] > summary::before { transform: rotate(90deg); }
+
+    .summary-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+      margin-left: auto;
+    }
+
+    .hook-body {
+      padding: 0.85rem 1.25rem 1.25rem;
+      border-top: 1px solid var(--border);
+    }
+    .hook-body p:first-child { margin-top: 0; }
+
+    .hook-meta-row {
+      display: flex;
+      gap: 1.5rem;
+      margin-bottom: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .hook-meta-item {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+    .hook-meta-item strong {
+      color: var(--text-subtle);
+      font-weight: 600;
+      font-size: 0.68rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 0.15rem;
+    }
+
+    .catches-list {
+      list-style: none;
+      padding: 0;
+      margin: 0.5rem 0 0.85rem;
+    }
+    .catches-list li {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      padding: 0.2rem 0;
+      padding-left: 1.1rem;
+      position: relative;
+    }
+    .catches-list li::before {
+      content: '→';
+      position: absolute;
+      left: 0;
+      color: var(--text-subtle);
+    }
+
+    /* ── Callouts ── */
+    .callout {
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      margin: 1rem 0;
+      font-size: 0.84rem;
+      display: flex;
+      gap: 0.75rem;
+    }
+    .callout-icon { flex-shrink: 0; font-size: 1rem; line-height: 1.5; }
+    .callout-info { background: rgba(88,166,255,0.07); border: 1px solid rgba(88,166,255,0.2); }
+    .callout-warn { background: rgba(218,54,51,0.07);  border: 1px solid rgba(218,54,51,0.25); }
+    .callout-tip  { background: rgba(35,134,54,0.07);  border: 1px solid rgba(35,134,54,0.25); }
+    .callout p { margin: 0; font-size: 0.84rem; }
+    .callout p + p { margin-top: 0.4rem; }
+
+    /* ── Timeline / lifecycle diagram ── */
+    .lifecycle {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem 1.75rem;
+      margin: 1rem 0 1.5rem;
+    }
+    .lifecycle-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 1rem;
+      align-items: start;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .lifecycle-row:last-child { border-bottom: none; }
+    .lifecycle-event {
+      font-size: 0.82rem;
+      color: var(--text);
+      font-weight: 600;
+    }
+    .lifecycle-arrow {
+      color: var(--text-subtle);
+      font-size: 0.78rem;
+      text-align: right;
+    }
+    .lifecycle-hooks {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.2rem;
+    }
+    .lifecycle-hooks .h-block { color: var(--warning-text); }
+    .lifecycle-hooks .h-info  { color: var(--accent); }
+    .lifecycle-hooks .h-inject { color: var(--success-text); }
+    .lifecycle-hooks .h-stop  { color: var(--text-subtle); }
+
+    /* ── Group headers ── */
+    .group-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin: 2.5rem 0 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .group-header h3 { margin: 0; font-size: 1rem; }
+    .group-rule {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    /* ── settings.json block ── */
+    .settings-label {
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+      margin: 1rem 0 0.3rem;
+    }
+
+    /* ── Step list ── */
+    .step-list { list-style: none; padding: 0; margin: 0.75rem 0; }
+    .step-list li {
+      display: flex;
+      gap: 0.75rem;
+      align-items: baseline;
+      padding: 0.35rem 0;
+      font-size: 0.86rem;
+      border-bottom: 1px solid rgba(48,54,61,0.5);
+    }
+    .step-list li:last-child { border-bottom: none; }
+    .step-n {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 1.4rem;
+      height: 1.4rem;
+      border-radius: 50%;
+      background: var(--accent-dim);
+      color: #e6edf3;
+      font-size: 0.7rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    /* ── Footer ── */
+    footer {
+      margin-top: 4rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.75rem;
+      color: var(--text-subtle);
+      text-align: center;
+    }
+    footer p { color: var(--text-subtle); font-size: 0.75rem; }
+    footer a { color: var(--accent); }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-subtle); }
+
+    /* ── Print ── */
+    @media print {
+      nav.topbar { display: none; }
+      .copy-btn { display: none; }
+      details { display: block !important; }
+      .hook-body { display: block !important; }
+      pre { white-space: pre-wrap; word-break: break-all; border: 1px solid #ccc; }
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 700px) {
+      main { padding: 1.5rem 1.1rem 4rem; }
+      nav.topbar { padding: 0 1rem; overflow-x: auto; }
+      .hero h1 { font-size: 1.5rem; }
+      .hook-meta-row { gap: 0.75rem; }
+      .lifecycle { padding: 1rem; }
+      .lifecycle-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Top nav bar ── -->
+<nav class="topbar" aria-label="Site navigation">
+  <a href="index.html" class="nav-brand">Orchestration Guide</a>
+  <ul class="nav-links">
+    <li><a href="index.html">Guide</a></li>
+    <li><a href="hooks.html" class="active">Hooks</a></li>
+    <li><a href="seeds.html">Seeds</a></li>
+    <li><a href="patterns.html">Patterns</a></li>
+    <li><a href="templates.html">Templates</a></li>
+  </ul>
+</nav>
+
+<main>
+
+  <!-- Hero -->
+  <header class="hero" id="top">
+    <p class="hero-eyebrow">Claude Code &middot; Hook Cookbook</p>
+    <h1>18 Hooks, End-to-End</h1>
+    <p class="subtitle">Every script, every settings.json entry, every catch — copy and wire.</p>
+    <p class="byline">18 hooks &nbsp;&middot;&nbsp; 5 event types &nbsp;&middot;&nbsp; PreToolUse / PostToolUse / UserPromptSubmit / Stop</p>
+  </header>
+
+  <!-- ──────────────────────────────────────────── -->
+  <!-- Section 1: How Hooks Work                    -->
+  <!-- ──────────────────────────────────────────── -->
+  <section id="how-hooks-work">
+    <h2><span class="section-num">1</span> How Hooks Work</h2>
+    <p class="section-desc">The three-line mental model before you write a single script.</p>
+
+    <p>Claude Code hooks are shell scripts executed by the harness on tool events. The harness passes JSON on stdin; the script reads it, inspects the action, and decides what to do. Three event types, three different powers:</p>
+
+    <ul>
+      <li><strong>PreToolUse + exit 2 = BLOCK.</strong> The action never runs. Use this for safety gates: destructive commands, force pushes, commits with broken builds. Exit 0 means "allow." Any non-zero exit other than 2 is treated as an error but still allows the action.</li>
+      <li><strong>PostToolUse = INFORM.</strong> The write is already on disk. Exit 2 has no blocking effect — the harness ignores it. Use PostToolUse for feedback loops: build checks, lint output, validation results.</li>
+      <li><strong>UserPromptSubmit = INJECT.</strong> Fires at the start of every turn before Claude sees the message. Use it to prepend situational context: git branch, dirty file count, drift status.</li>
+    </ul>
+
+    <p>The <code>settings.json</code> structure that wires a hook:</p>
+
+    <div class="pre-wrap">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      <pre><code>{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [{ "type": "command", "command": "/path/to/hook.sh" }]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [{ "type": "command", "command": "/path/to/hook.sh" }]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [{ "type": "command", "command": "/path/to/hook.sh" }]
+      }
+    ]
+  }
+}</code></pre>
+    </div>
+
+    <p><strong>The <code>matcher</code> field</strong> is a regex applied to the tool name. <code>"Bash"</code> fires on every Bash call. <code>"Edit|Write"</code> fires on file edits and file writes. <code>""</code> (empty string) matches everything — use it for UserPromptSubmit and Stop hooks that should always fire. <code>"Agent"</code> fires when sub-agents are dispatched.</p>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">&#9888;</span>
+      <div>
+        <p><strong>PostToolUse exit 2 does nothing.</strong> A common mistake: writing a PostToolUse hook that exits 2 expecting to undo a write. The write is already on disk. The harness ignores exit 2 in PostToolUse. If you want to prevent a write, use PreToolUse on the <code>Write</code> or <code>Edit</code> tool instead.</p>
+      </div>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">&#10003;</span>
+      <div>
+        <p><strong>Reading stdin.</strong> Every hook receives a JSON blob on stdin. The reliable parse pattern: <code>INPUT=$(cat)</code> then <code>python3 -c "import json,sys; print(json.load(sys.stdin).get('tool_input',{}).get('command',''))"</code>. The outer key is always <code>tool_input</code>; the inner keys vary by tool (<code>command</code> for Bash, <code>file_path</code> for Edit/Write).</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ──────────────────────────────────────────── -->
+  <!-- Section 2: Lifecycle Diagram                 -->
+  <!-- ──────────────────────────────────────────── -->
+  <section id="lifecycle">
+    <h2><span class="section-num">2</span> The Hook Lifecycle</h2>
+    <p class="section-desc">Where each hook fires in a typical edit-commit-tag session.</p>
+
+    <div class="lifecycle">
+      <div class="lifecycle-row">
+        <div>
+          <div class="lifecycle-event">User types a message</div>
+          <div class="lifecycle-hooks">
+            <span class="h-inject">UserPromptSubmit:</span> context-inject.sh, drift-detector.sh
+          </div>
+        </div>
+        <div class="lifecycle-arrow">&#8595;</div>
+      </div>
+      <div class="lifecycle-row">
+        <div>
+          <div class="lifecycle-event">Edit a <code>.go</code> file</div>
+          <div class="lifecycle-hooks">
+            <span class="h-info">PostToolUse:</span> go-build-check.sh, go-vet-check.sh
+          </div>
+        </div>
+        <div class="lifecycle-arrow">&#8595;</div>
+      </div>
+      <div class="lifecycle-row">
+        <div>
+          <div class="lifecycle-event">Edit a <code>*_test.go</code> file</div>
+          <div class="lifecycle-hooks">
+            <span class="h-info">PostToolUse:</span> go-test-check.sh
+          </div>
+        </div>
+        <div class="lifecycle-arrow">&#8595;</div>
+      </div>
+      <div class="lifecycle-row">
+        <div>
+          <div class="lifecycle-event">Edit a <code>.svelte</code> file</div>
+          <div class="lifecycle-hooks">
+            <span class="h-info">PostToolUse:</span> svelte5-lint.sh
+          </div>
+        </div>
+        <div class="lifecycle-arrow">&#8595;</div>
+      </div>
+      <div class="lifecycle-row">
+        <div>
+          <div class="lifecycle-event">Edit a <code>SKILL.md</code></div>
+          <div class="lifecycle-hooks">
+            <span class="h-info">PostToolUse:</span> skill-validate.sh
+          </div>
+        </div>
+        <div class="lifecycle-arrow">&#8595;</div>
+      </div>
+      <div class="lifecycle-row">
+        <div>
+          <div class="lifecycle-event">Run <code>git commit</code></div>
+          <div class="lifecycle-hooks">
+            <span class="h-block">PreToolUse (BLOCKS if broken):</span> pre-commit-build-gate.sh, pre-commit-multi-lang-gate.sh
+          </div>
+        </div>
+        <div class="lifecycle-arrow">&#8595;</div>
+      </div>
+      <div class="lifecycle-row">
+        <div>
+          <div class="lifecycle-event">Run <code>git tag</code></div>
+          <div class="lifecycle-hooks">
+            <span class="h-block">PreToolUse (BLOCKS if tests/lint/e2e fail):</span> milestone-gate.sh
+          </div>
+        </div>
+        <div class="lifecycle-arrow">&#8595;</div>
+      </div>
+      <div class="lifecycle-row">
+        <div>
+          <div class="lifecycle-event">Dispatch an agent</div>
+          <div class="lifecycle-hooks">
+            <span class="h-info">PostToolUse:</span> agent-log.sh, agent-model-enforce.sh
+          </div>
+        </div>
+        <div class="lifecycle-arrow">&#8595;</div>
+      </div>
+      <div class="lifecycle-row">
+        <div>
+          <div class="lifecycle-event">Session ends (Stop event)</div>
+          <div class="lifecycle-hooks">
+            <span class="h-stop">Stop:</span> done-notification.sh
+          </div>
+        </div>
+        <div class="lifecycle-arrow">&mdash;</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ──────────────────────────────────────────── -->
+  <!-- Section 3: Full Hook Catalog                 -->
+  <!-- ──────────────────────────────────────────── -->
+  <section id="catalog">
+    <h2><span class="section-num">3</span> Full Hook Catalog</h2>
+    <p class="section-desc">18 hooks grouped by event type. Each card shows the full script, exact settings.json wiring, and what it catches.</p>
+
+    <!-- ── Group: PreToolUse ── -->
+    <div class="group-header">
+      <h3>PreToolUse &mdash; Blocking</h3>
+      <span class="badge badge-red">BLOCKS on exit 2</span>
+      <span class="group-rule">exit 2 stops the action; exit 0 allows it</span>
+    </div>
+
+    <!-- 1. destructive-guard -->
+    <div class="hook-card blocking">
+      <details>
+        <summary>
+          destructive-guard.sh
+          <span class="summary-meta">
+            <span class="badge badge-red">PreToolUse</span>
+            <span class="badge badge-red">BLOCKS</span>
+            <span class="badge badge-yellow">Bash</span>
+          </span>
+        </summary>
+        <div class="hook-body">
+          <div class="hook-meta-row">
+            <div class="hook-meta-item"><strong>Matcher</strong><code>Bash</code></div>
+            <div class="hook-meta-item"><strong>Purpose</strong>Block catastrophic shell commands before they run</div>
+          </div>
+
+          <p>Guards against the four most common irreversible commands: <code>rm -rf</code> on root or home paths, <code>git reset --hard</code> with no ref, <code>git checkout -- .</code>, and <code>git clean -f</code> with no path scope.</p>
+
+          <p class="settings-label">Script &mdash; ~/.claude/hooks/destructive-guard.sh</p>
+          <div class="pre-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><code>#!/bin/bash
+INPUT=$(cat)
+CMD=$(echo "$INPUT" | python3 -c \
+  "import json,sys; print(json.load(sys.stdin).get('tool_input',{}).get('command',''))" \
+  2>/dev/null || echo "")
+
+# Block rm -rf on root-level or home-directory paths
+if echo "$CMD" | grep -qE 'rm\s+-[rf]+\s+(/[^/[:space:]]*[[:space:]]*$|~/[[:space:]]*$|~[[:space:]]*$)'; then
+  echo "BLOCKED: rm -rf on a root-level or home path. Use a more specific path." &gt;&amp;2
+  exit 2
+fi
+
+# Block git reset --hard with no ref (nukes working tree silently)
+if echo "$CMD" | grep -qE 'git\s+reset\s+--hard\s*$'; then
+  echo "BLOCKED: git reset --hard with no ref. Specify a commit ref or use git stash." &gt;&amp;2
+  exit 2
+fi
+
+# Block git checkout -- . (discards all unstaged changes)
+if echo "$CMD" | grep -qE 'git\s+checkout\s+--\s+\.'; then
+  echo "BLOCKED: git checkout -- . discards all unstaged changes. Use git stash instead." &gt;&amp;2
+  exit 2
+fi
+
+# Block git clean -f with no path scope
+if echo "$CMD" | grep -qE 'git\s+clean\s+-[ffdx]+\s*$'; then
+  echo "BLOCKED: git clean -f with no path scope. Add a target directory." &gt;&amp;2
+  exit 2
+fi
+
+exit 0</code></pre>
+          </div>
+
+          <p class="settings-label">settings.json wiring</p>
+          <div class="pre-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><code>{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [{ "type": "command", "command": "~/.claude/hooks/destructive-guard.sh" }]
+      }
+    ]
+  }
+}</code></pre>
+          </div>
+
+          <p style="margin-top:0.75rem; font-size:0.8rem; color:var(--text-muted);">What it catches:</p>
+          <ul class="catches-list">
+            <li><code>rm -rf /</code>, <code>rm -rf ~</code>, <code>rm -rf ~/</code></li>
+            <li><code>git reset --hard</code> (no ref — resets to HEAD silently discarding all changes)</li>
+            <li><code>git checkout -- .</code> (wipes unstaged edits across entire repo)</li>
+            <li><code>git clean -ffd</code> with no path (deletes all untracked files)</li>
+          </ul>
+        </div>
+      </details>
+    </div>
+
+    <!-- 2. force-push-guard -->
+    <div class="hook-card blocking">
+      <details>
+        <summary>
+          force-push-guard.sh
+          <span class="summary-meta">
+            <span class="badge badge-red">PreToolUse</span>
+            <span class="badge badge-red">BLOCKS</span>
+            <span class="badge badge-yellow">Bash</span>
+          </span>
+        </summary>
+        <div class="hook-body">
+          <div class="hook-meta-row">
+            <div class="hook-meta-item"><strong>Matcher</strong><code>Bash</code></div>
+            <div class="hook-meta-item"><strong>Purpose</strong>Hard block force push to main/master; warn on any other branch</div>
+          </div>
+
+          <p>A force push to <code>main</code> or <code>master</code> is an immediate exit 2. Force push to any other branch prints a warning but allows it through (exit 0).</p>
+
+          <p class="settings-label">Script &mdash; ~/.claude/hooks/force-push-guard.sh</p>
+          <div class="pre-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><code>#!/bin/bash
+INPUT=$(cat)
+CMD=$(echo "$INPUT" | python3 -c \
+  "import json,sys; print(json.load(sys.stdin).get('tool_input',{}).get('command',''))" \
+  2>/dev/null || echo "")
+
+# Check if this is a force push
+if ! echo "$CMD" | grep -qE 'git\s+push.*(--force|-f)(\s|$)'; then
+  exit 0
+fi
+
+# Extract target branch if present
+BRANCH=$(echo "$CMD" | grep -oE '(origin|upstream)\s+[a-zA-Z0-9/_-]+' | awk '{print $2}' | head -1)
+
+# Hard block on main/master
+if echo "$BRANCH" | grep -qE '^(main|master)$'; then
+  echo "BLOCKED: force push to ${BRANCH} is not allowed." &gt;&amp;2
+  echo "If you truly need this, run the git push command manually in a terminal." &gt;&amp;2
+  exit 2
+fi
+
+# Warn on any other branch
+if [ -n "$BRANCH" ]; then
+  echo "WARNING: force pushing to branch '${BRANCH}'. This rewrites remote history." &gt;&amp;2
+  echo "Continuing — but verify with the team before doing this on shared branches." &gt;&amp;2
+else
+  echo "WARNING: force push detected without clear target branch. Allowing — verify intent." &gt;&amp;2
+fi
+
+exit 0</code></pre>
+          </div>
+
+          <p class="settings-label">settings.json wiring</p>
+          <div class="pre-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><code>{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [{ "type": "command", "command": "~/.claude/hooks/force-push-guard.sh" }]
+      }
+    ]
+  }
+}</code></pre>
+          </div>
+
+          <ul class="catches-list">
+            <li><code>git push origin main --force</code> &mdash; hard blocked</li>
+            <li><code>git push --force-with-lease origin master</code> &mdash; hard blocked</li>
+            <li><code>git push origin feature/x -f</code> &mdash; warned, allowed</li>
+          </ul>
+        </div>
+      </details>
+    </div>
+
+    <!-- 3. pre-commit-build-gate -->
+    <div class="hook-card blocking">
+      <details>
+        <summary>
+          pre-commit-build-gate.sh
+          <span class="summary-meta">
+            <span class="badge badge-red">PreToolUse</span>
+            <span class="badge badge-red">BLOCKS</span>
+            <span class="badge badge-yellow">Bash</span>
+          </span>
+        </summary>
+        <div class="hook-body">
+          <div class="hook-meta-row">
+            <div class="hook-meta-item"><strong>Matcher</strong><code>Bash</code></div>
+            <div class="hook-meta-item"><strong>Purpose</strong>Block git commit if staged .go files fail go build</div>
+          </div>
+
+          <p>Intercepts every <code>git commit</code> call. Walks staged Go files, deduplicates by <code>go.mod</code> root, runs <code>go build ./...</code> in each module, and blocks if any fail. Only triggers when Go files are actually staged — zero cost on TypeScript-only commits.</p>
+
+          <p class="settings-label">Script &mdash; ~/.claude/hooks/pre-commit-build-gate.sh</p>
+          <div class="pre-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><code>#!/bin/bash
+INPUT=$(cat)
+CMD=$(echo "$INPUT" | python3 -c \
+  "import json,sys; print(json.load(sys.stdin).get('tool_input',{}).get('command',''))" \
+  2>/dev/null || echo "")
+
+# Only run on git commit commands
+echo "$CMD" | grep -qE 'git\s+commit' || exit 0
+
+# Get staged Go files
+STAGED_GO=$(git diff --cached --name-only 2>/dev/null | grep '\.go$' || true)
+[[ -n "$STAGED_GO" ]] || exit 0
+
+CHECKED_ROOTS=""
+REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
+FAILED=""
+
+while IFS= read -r gofile; do
+  DIR="$REPO_ROOT/$(dirname "$gofile")"
+  MOD_ROOT="$DIR"
+
+  # Walk up to find go.mod
+  while [[ "$MOD_ROOT" != "/" && ! -f "$MOD_ROOT/go.mod" ]]; do
+    MOD_ROOT=$(dirname "$MOD_ROOT")
+  done
+  [[ -f "$MOD_ROOT/go.mod" ]] || continue
+
+  # Skip already-checked module roots
+  echo "$CHECKED_ROOTS" | grep -qF "$MOD_ROOT" && continue
+  CHECKED_ROOTS="$CHECKED_ROOTS
+$MOD_ROOT"
+
+  RESULT=$(cd "$MOD_ROOT" && go build ./... 2&gt;&amp;1) || true
+  if [[ -n "$RESULT" ]]; then
+    FAILED="$FAILED\n[$MOD_ROOT]\n$RESULT"
+  fi
+done &lt;&lt;&lt; "$STAGED_GO"
+
+if [[ -n "$FAILED" ]]; then
+  echo "BLOCKED: go build ./... failed — fix before committing:" &gt;&amp;2
+  echo -e "$FAILED" &gt;&amp;2
+  exit 2
+fi
+
+exit 0</code></pre>
+          </div>
+
+          <p class="settings-label">settings.json wiring</p>
+          <div class="pre-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><code>{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [{ "type": "command", "command": "~/.claude/hooks/pre-commit-build-gate.sh" }]
+      }
+    ]
+  }
+}</code></pre>
+          </div>
+
+          <ul class="catches-list">
+            <li>Type mismatch in staged Go file caught before commit lands</li>
+            <li>Undefined function reference from a parallel edit in another file</li>
+            <li>Import cycle introduced in a refactor</li>
+            <li>Multi-module monorepo: each module checked independently</li>
+          </ul>
+        </div>
+      </details>
+    </div>
+
+    <!-- 4. pre-commit-multi-lang-gate -->
+    <div class="hook-card blocking">
+      <details>
+        <summary>
+          pre-commit-multi-lang-gate.sh
+          <span class="summary-meta">
+            <span class="badge badge-red">PreToolUse</span>
+            <span class="badge badge-red">BLOCKS</span>
+            <span class="badge badge-yellow">Bash</span>
+          </span>
+        </summary>
+        <div class="hook-body">
+          <div class="hook-meta-row">
+            <div class="hook-meta-item"><strong>Matcher</strong><code>Bash</code></div>
+            <div class="hook-meta-item"><strong>Purpose</strong>Extend the Go gate to TypeScript and Rust staged files</div>
+          </div>
+
+          <p>Same pattern as the Go gate but covers TypeScript (<code>tsc --noEmit</code>) and Rust (<code>cargo check</code>). Runs only when the relevant file types are staged. Complements the Go gate — wire both in the same matcher.</p>
+
+          <p class="settings-label">Script &mdash; ~/.claude/hooks/pre-commit-multi-lang-gate.sh</p>
+          <div class="pre-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><code>#!/bin/bash
+INPUT=$(cat)
+CMD=$(echo "$INPUT" | python3 -c \
+  "import json,sys; print(json.load(sys.stdin).get('tool_input',{}).get('command',''))" \
+  2>/dev/null || echo "")
+
+echo "$CMD" | grep -qE 'git\s+commit' || exit 0
+
+REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
+FAILED=""
+
+# ── TypeScript ──
+STAGED_TS=$(git diff --cached --name-only 2>/dev/null | grep -E '\.(ts|tsx)$' || true)
+if [[ -n "$STAGED_TS" ]]; then
+  # Find tsconfig.json searching up from the first changed file
+  FIRST_DIR="$REPO_ROOT/$(dirname "$(echo "$STAGED_TS" | head -1)")"
+  TSC_ROOT="$FIRST_DIR"
+  while [[ "$TSC_ROOT" != "/" && ! -f "$TSC_ROOT/tsconfig.json" ]]; do
+    TSC_ROOT=$(dirname "$TSC_ROOT")
+  done
+  if [[ -f "$TSC_ROOT/tsconfig.json" ]]; then
+    TS_RESULT=$(cd "$TSC_ROOT" && npx tsc --noEmit 2&gt;&amp;1) || true
+    if [[ -n "$TS_RESULT" ]]; then
+      FAILED="$FAILED\n[TypeScript: $TSC_ROOT]\n$TS_RESULT"
+    fi
+  fi
+fi
+
+# ── Rust ──
+STAGED_RS=$(git diff --cached --name-only 2>/dev/null | grep '\.rs$' || true)
+if [[ -n "$STAGED_RS" ]]; then
+  FIRST_RS_DIR="$REPO_ROOT/$(dirname "$(echo "$STAGED_RS" | head -1)")"
+  CARGO_ROOT="$FIRST_RS_DIR"
+  while [[ "$CARGO_ROOT" != "/" && ! -f "$CARGO_ROOT/Cargo.toml" ]]; do
+    CARGO_ROOT=$(dirname "$CARGO_ROOT")
+  done
+  if [[ -f "$CARGO_ROOT/Cargo.toml" ]]; then
+    RS_RESULT=$(cd "$CARGO_ROOT" && cargo check 2&gt;&amp;1) || true
+    if echo "$RS_RESULT" | grep -q "^error"; then
+      FAILED="$FAILED\n[Rust: $CARGO_ROOT]\n$RS_RESULT"
+    fi
+  fi
+fi
+
+if [[ -n "$FAILED" ]]; then
+  echo "BLOCKED: compilation errors in staged files — fix before committing:" &gt;&amp;2
+  echo -e "$FAILED" &gt;&amp;2
+  exit 2
+fi
+
+exit 0</code></pre>
+          </div>
+
+          <p class="settings-label">settings.json wiring</p>
+          <div class="pre-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><code>{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "command": "~/.claude/hooks/pre-commit-build-gate.sh" },
+          { "type": "command", "command": "~/.claude/hooks/pre-commit-multi-lang-gate.sh" }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+          </div>
+
+          <ul class="catches-list">
+            <li>TypeScript type error in a staged <code>.ts</code> file</li>
+            <li>Rust borrow checker error in staged <code>.rs</code> file</li>
+            <li>Missing Cargo.toml dependency caught before commit</li>
+          </ul>
+        </div>
+      </details>
+    </div>
+
+    <!-- 5. milestone-gate -->
+    <div class="hook-card blocking">
+      <details>
+        <summary>
+          milestone-gate.sh
+          <span class="summary-meta">
+            <span class="badge badge-red">PreToolUse</span>
+            <span class="badge badge-red">BLOCKS</span>
+            <span class="badge badge-yellow">Bash</span>
+          </span>
+        </summary>
+        <div class="hook-body">
+          <div class="hook-meta-row">
+            <div class="hook-meta-item"><strong>Matcher</strong><code>Bash</code></div>
+            <div class="hook-meta-item"><strong>Purpose</strong>Block git tag unless full multi-language quality suite passes</div>
+          </div>
+
+          <p>The most comprehensive gate. Intercepts <code>git tag</code> and runs the full stack: Go build → vet → golangci-lint → test → e2e, TypeScript tsc → ESLint, Rust check → clippy → test, Python ruff → pytest. Missing lint tools print install instructions as warnings rather than hard-blocking, so the gate degrades gracefully in minimal environments.</p>
+
+          <p class="settings-label">Script &mdash; ~/.claude/hooks/milestone-gate.sh</p>
+          <div class="pre-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><code>#!/bin/bash
+INPUT=$(cat)
+CMD=$(echo "$INPUT" | python3 -c \
+  "import json,sys; print(json.load(sys.stdin).get('tool_input',{}).get('command',''))" \
+  2>/dev/null || echo "")
+
+echo "$CMD" | grep -qE 'git\s+tag' || exit 0
+
+REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
+FAILED=""
+WARN=""
+
+echo "--- milestone-gate: running full quality suite ---" &gt;&amp;2
+
+# ── Go ──
+if find "$REPO_ROOT" -name "go.mod" -not -path "*/vendor/*" | head -1 | grep -q .; then
+  while IFS= read -r modfile; do
+    MOD_DIR=$(dirname "$modfile")
+
+    BUILD=$(cd "$MOD_DIR" &amp;&amp; go build ./... 2&gt;&amp;1) || true
+    [[ -n "$BUILD" ]] &amp;&amp; FAILED="$FAILED\n[go build: $MOD_DIR]\n$BUILD"
+
+    VET=$(cd "$MOD_DIR" &amp;&amp; go vet ./... 2&gt;&amp;1) || true
+    [[ -n "$VET" ]] &amp;&amp; FAILED="$FAILED\n[go vet: $MOD_DIR]\n$VET"
+
+    if command -v golangci-lint &gt;/dev/null 2&gt;&amp;1; then
+      LINT=$(cd "$MOD_DIR" &amp;&amp; golangci-lint run ./... 2&gt;&amp;1) || true
+      [[ -n "$LINT" ]] &amp;&amp; FAILED="$FAILED\n[golangci-lint: $MOD_DIR]\n$LINT"
+    else
+      WARN="$WARN\n[WARN] golangci-lint not found. Install: brew install golangci-lint"
+    fi
+
+    TEST=$(cd "$MOD_DIR" &amp;&amp; go test ./... 2&gt;&amp;1) || true
+    if echo "$TEST" | grep -qE '^(FAIL|---\s+FAIL)'; then
+      FAILED="$FAILED\n[go test: $MOD_DIR]\n$TEST"
+    fi
+  done &lt; &lt;(find "$REPO_ROOT" -name "go.mod" -not -path "*/vendor/*")
+fi
+
+# ── TypeScript ──
+if find "$REPO_ROOT" -name "tsconfig.json" -not -path "*/node_modules/*" | head -1 | grep -q .; then
+  while IFS= read -r tscfg; do
+    TSC_DIR=$(dirname "$tscfg")
+    TSC=$(cd "$TSC_DIR" &amp;&amp; npx tsc --noEmit 2&gt;&amp;1) || true
+    [[ -n "$TSC" ]] &amp;&amp; FAILED="$FAILED\n[tsc: $TSC_DIR]\n$TSC"
+
+    if [ -f "$TSC_DIR/.eslintrc.json" ] || [ -f "$TSC_DIR/.eslintrc.js" ] || [ -f "$TSC_DIR/eslint.config.js" ]; then
+      ESL=$(cd "$TSC_DIR" &amp;&amp; npx eslint . 2&gt;&amp;1) || true
+      if echo "$ESL" | grep -q "error"; then
+        FAILED="$FAILED\n[eslint: $TSC_DIR]\n$ESL"
+      fi
+    fi
+  done &lt; &lt;(find "$REPO_ROOT" -name "tsconfig.json" -not -path "*/node_modules/*")
+fi
+
+# ── Rust ──
+if find "$REPO_ROOT" -name "Cargo.toml" -not -path "*/target/*" | head -1 | grep -q .; then
+  CARGO_ROOT=$(find "$REPO_ROOT" -name "Cargo.toml" -not -path "*/target/*" | head -1 | xargs dirname)
+  RS_CHECK=$(cd "$CARGO_ROOT" &amp;&amp; cargo check 2&gt;&amp;1) || true
+  echo "$RS_CHECK" | grep -q "^error" &amp;&amp; FAILED="$FAILED\n[cargo check]\n$RS_CHECK"
+
+  if command -v cargo-clippy &gt;/dev/null 2&gt;&amp;1; then
+    CLIPPY=$(cd "$CARGO_ROOT" &amp;&amp; cargo clippy -- -D warnings 2&gt;&amp;1) || true
+    echo "$CLIPPY" | grep -q "^error" &amp;&amp; FAILED="$FAILED\n[clippy]\n$CLIPPY"
+  else
+    WARN="$WARN\n[WARN] cargo-clippy not found. Install: rustup component add clippy"
+  fi
+
+  RS_TEST=$(cd "$CARGO_ROOT" &amp;&amp; cargo test 2&gt;&amp;1) || true
+  echo "$RS_TEST" | grep -q "^FAILED" &amp;&amp; FAILED="$FAILED\n[cargo test]\n$RS_TEST"
+fi
+
+# ── Python ──
+if find "$REPO_ROOT" -name "*.py" -not -path "*/.venv/*" | head -1 | grep -q .; then
+  if command -v ruff &gt;/dev/null 2&gt;&amp;1; then
+    RUFF=$(cd "$REPO_ROOT" &amp;&amp; ruff check . 2&gt;&amp;1) || true
+    echo "$RUFF" | grep -q "error" &amp;&amp; FAILED="$FAILED\n[ruff]\n$RUFF"
+  else
+    WARN="$WARN\n[WARN] ruff not found. Install: pip install ruff"
+  fi
+
+  if command -v pytest &gt;/dev/null 2&gt;&amp;1; then
+    PYTEST=$(cd "$REPO_ROOT" &amp;&amp; pytest --tb=short -q 2&gt;&amp;1) || true
+    echo "$PYTEST" | grep -q "failed" &amp;&amp; FAILED="$FAILED\n[pytest]\n$PYTEST"
+  fi
+fi
+
+# ── Results ──
+[[ -n "$WARN" ]] &amp;&amp; echo -e "$WARN" &gt;&amp;2
+
+if [[ -n "$FAILED" ]]; then
+  echo "" &gt;&amp;2
+  echo "BLOCKED: milestone-gate failed — cannot tag until all checks pass:" &gt;&amp;2
+  echo -e "$FAILED" &gt;&amp;2
+  exit 2
+fi
+
+echo "milestone-gate: all checks passed." &gt;&amp;2
+exit 0</code></pre>
+          </div>
+
+          <p class="settings-label">settings.json wiring</p>
+          <div class="pre-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><code>{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [{ "type": "command", "command": "~/.claude/hooks/milestone-gate.sh" }]
+      }
+    ]
+  }
+}</code></pre>
+          </div>
+
+          <ul class="catches-list">
+            <li>Go test regression introduced before the release tag</li>
+            <li>TypeScript type errors missed during rapid iteration</li>
+            <li>Rust clippy warning that was suppressed locally but fails in CI</li>
+            <li>Python ruff lint error in a data pipeline script</li>
+          </ul>
+        </div>
+      </details>
+    </div>
+
+    <!-- ── Group: PostToolUse ── -->
+    <div class="group-header">
+      <h3>PostToolUse &mdash; Informational</h3>
+      <span class="badge badge-blue">INFORMS after write</span>
+      <span class="group-rule">exit 2 has no effect; use for feedback loops</span>
+    </div>
+
+    <!-- 6. go-build-check -->
+    <div class="hook-card informing">
+      <details>
+        <summary>
+          go-build-check.sh
+          <span class="summary-meta">
+            <span class="badge badge-blue">PostToolUse</span>
+            <span class="badge badge-blue">INFORMS</span>
+            <span class="badge badge-yellow">Edit|Write</span>
+          </span>
+        </summary>
+        <div class="hook-body">
+          <div class="hook-meta-row">
+            <div class="hook-meta-item"><strong>Matcher</strong><code>Edit|Write</code></div>
+            <div class="hook-meta-item"><strong>Purpose</strong>Run go build immediately after editing non-test Go files</div>
+          </div>
+
+          <p>Fires on every <code>Edit</code> or <code>Write</code> to a <code>.go</code> file (excluding <code>*_test.go</code>). Walks up to find the module root, runs <code>go build ./...</code>, and prints errors inline. The turnaround is seconds — errors surface before the next tool call.</p>
+
+          <p class="settings-label">Script &mdash; ~/.claude/hooks/go-build-check.sh</p>
+          <div class="pre-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><code>#!/bin/bash
+INPUT=$(cat)
+FILE=$(echo "$INPUT" | python3 -c \
+  "import json,sys; print(json.load(sys.stdin).get('tool_input',{}).get('file_path',''))" \
+  2>/dev/null || echo "")
+
+# Only .go files, skip test files
+[[ "$FILE" == *.go && "$FILE" != *_test.go ]] || exit 0
+
+DIR=$(dirname "$FILE")
+MOD_ROOT="$DIR"
+while [[ "$MOD_ROOT" != "/" &amp;&amp; ! -f "$MOD_ROOT/go.mod" ]]; do
+  MOD_ROOT=$(dirname "$MOD_ROOT")
+done
+[[ -f "$MOD_ROOT/go.mod" ]] || exit 0
+
+cd "$MOD_ROOT"
+RESULT=$(go build ./... 2&gt;&amp;1) || true
+if [[ -n "$RESULT" ]]; then
+  echo "--- go build ./... ($MOD_ROOT) ---"
+  echo "$RESULT"
+fi</code></pre>
+          </div>
+
+          <p class="settings-label">settings.json wiring</p>
+          <div class="pre-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><code>{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [{ "type": "command", "command": "~/.claude/hooks/go-build-check.sh" }]
+      }
+    ]
+  }
+}</code></pre>
+          </div>
+
+          <ul class="catches-list">
+            <li>Type mismatch surfaced after the edit, before the next read</li>
+            <li>Undefined variable from a refactor visible immediately</li>
+            <li>Silent in green state — only prints when there are errors</li>
+          </ul>
+        </div>
+      </details>
+    </div>
+
+    <!-- 7. go-vet-check -->
+    <div class="hook-card informing">
+      <details>
+        <summary>
+          go-vet-check.sh
+          <span class="summary-meta">
+            <span class="badge badge-blue">PostToolUse</span>
+            <span class="badge badge-blue">INFORMS</span>
+            <span class="badge badge-yellow">Edit|Write</span>
+          </span>
+        </summary>
+        <div class="hook-body">
+          <div class="hook-meta-row">
+            <div class="hook-meta-item"><strong>Matcher</strong><code>Edit|Write</code></div>
+            <div class="hook-meta-item"><strong>Purpose</strong>Run go vet after editing Go files — catches what build misses</div>
+          </div>
+
+          <p><code>go vet</code> catches correctness issues that compile successfully: unreachable code after return, mismatched <code>fmt.Printf</code> format strings, struct tag errors, and more. Same file-matching and module-walk pattern as <code>go-build-check.sh</code>.</p>
+
+          <p class="settings-label">Script &mdash; ~/.claude/hooks/go-vet-check.sh</p>
+          <div class="pre-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><code>#!/bin/bash
+INPUT=$(cat)
+FILE=$(echo "$INPUT" | python3 -c \
+  "import json,sys; print(json.load(sys.stdin).get('tool_input',{}).get('file_path',''))" \
+  2>/dev/null || echo "")
+
+[[ "$FILE" == *.go ]] || exit 0
+
+DIR=$(dirname "$FILE")
+MOD_ROOT="$DIR"
+while [[ "$MOD_ROOT" != "/" &amp;&amp; ! -f "$MOD_ROOT/go.mod" ]]; do
+  MOD_ROOT=$(dirname "$MOD_ROOT")
+done
+[[ -f "$MOD_ROOT/go.mod" ]] || exit 0
+
+cd "$MOD_ROOT"
+RESULT=$(go vet ./... 2&gt;&amp;1) || true
+if [[ -n "$RESULT" ]]; then
+  echo "--- go vet ./... ($MOD_ROOT) ---"
+  echo "$RESULT"
+fi</code></pre>
+          </div>
+
+          <p class="settings-label">settings.json wiring</p>
+          <div class="pre-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><code>{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          { "type": "command", "command": "~/.claude/hooks/go-build-check.sh" },
+          { "type": "command", "command": "~/.claude/hooks/go-vet-check.sh" }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+          </div>
+
+          <ul class="catches-list">
+            <li><code>fmt.Printf("%s", intValue)</code> — format string mismatch</li>
+            <li>Unreachable code after an early return</li>
+            <li>Incorrect struct tags that would silently skip JSON fields</li>
+          </ul>
+        </div>
+      </details>
+    </div>
+
+    <!-- 8. go-test-check -->
+    <div class="hook-card informing">
+      <details>
+        <summary>
+          go-test-check.sh
+          <span class="summary-meta">
+            <span class="badge badge-blue">PostToolUse</span>
+            <span class="badge badge-blue">INFORMS</span>
+            <span class="badge badge-yellow">Edit|Write</span>
+          </span>
+        </summary>
+        <div class="hook-body">
+          <div class="hook-meta-row">
+            <div class="hook-meta-item"><strong>Matcher</strong><code>Edit|Write</code></div>
+            <div class="hook-meta-item"><strong>Purpose</strong>Run go test after editing *_test.go files</div>
+          </div>
+
+          <p>Triggered only on <code>*_test.go</code> edits. Runs <code>go test ./...</code> from the module root and prints failures. Complements <code>go-build-check.sh</code> — together they cover both production code and test code without overlap.</p>
+
+          <p class="settings-label">Script &mdash; ~/.claude/hooks/go-test-check.sh</p>
+          <div class="pre-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><code>#!/bin/bash
+INPUT=$(cat)
+FILE=$(echo "$INPUT" | python3 -c \
+  "import json,sys; print(json.load(sys.stdin).get('tool_input',{}).get('file_path',''))" \
+  2>/dev/null || echo "")
+
+# Only trigger on test files
+[[ "$FILE" == *_test.go ]] || exit 0
+
+DIR=$(dirname "$FILE")
+MOD_ROOT="$DIR"
+while [[ "$MOD_ROOT" != "/" &amp;&amp; ! -f "$MOD_ROOT/go.mod" ]]; do
+  MOD_ROOT=$(dirname "$MOD_ROOT")
+done
+[[ -f "$MOD_ROOT/go.mod" ]] || exit 0
+
+cd "$MOD_ROOT"
+RESULT=$(go test ./... 2&gt;&amp;1) || true
+if echo "$RESULT" | grep -qE '^(FAIL|---\s+FAIL)'; then
+  echo "--- go test ./... ($MOD_ROOT) ---"
+  echo "$RESULT"
+fi</code></pre>
+          </div>
+
+          <p class="settings-label">settings.json wiring</p>
+          <div class="pre-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><code>{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [{ "type": "command", "command": "~/.claude/hooks/go-test-check.sh" }]
+      }
+    ]
+  }
+}</code></pre>
+          </div>
+
+          <ul class="catches-list">
+            <li>Test assertion updated but production code not yet matching</li>
+            <li>Table-driven test case added that exposes a regression</li>
+          </ul>
+        </div>
+      </details>
+    </div>
+
+    <!-- 9. svelte5-lint -->
+    <div class="hook-card informing">
+      <details>
+        <summary>
+          svelte5-lint.sh
+          <span class="summary-meta">
+            <span class="badge badge-blue">PostToolUse</span>
+            <span class="badge badge-blue">INFORMS</span>
+            <span class="badge badge-yellow">Edit|Write</span>
+          </span>
+        </summary>
+        <div class="hook-body">
+          <div class="hook-meta-row">
+            <div class="hook-meta-item"><strong>Matcher</strong><code>Edit|Write</code></div>
+            <div class="hook-meta-item"><strong>Purpose</strong>Flag Svelte 4 event directive syntax in .svelte files</div>
+          </div>
+
+          <p>Svelte 5 removed the <code>on:</code> event directive entirely. The compiler rejects it. This hook greps for <code>on:[a-zA-Z]</code> patterns in any <code>.svelte</code> edit and prints the line numbers. The fix is always to convert to <code>onclick={handler}</code> syntax.</p>
+
+          <p class="settings-label">Script &mdash; ~/.claude/hooks/svelte5-lint.sh</p>
+          <div class="pre-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><code>#!/bin/bash
+INPUT=$(cat)
+FILE=$(echo "$INPUT" | python3 -c \
+  "import json,sys; print(json.load(sys.stdin).get('tool_input',{}).get('file_path',''))" \
+  2>/dev/null || echo "")
+
+[[ "$FILE" == *.svelte ]] || exit 0
+[[ -f "$FILE" ]] || exit 0
+
+MATCHES=$(grep -n 'on:[a-zA-Z]' "$FILE" 2>/dev/null || true)
+if [[ -n "$MATCHES" ]]; then
+  echo "--- svelte5-lint: Svelte 4 event directives found in $(basename "$FILE") ---"
+  echo "$MATCHES"
+  echo ""
+  echo "Fix: replace 'on:click={handler}' with 'onclick={handler}'"
+  echo "     replace 'on:input|e.stopPropagation()' with 'oninput={(e) => { e.stopPropagation(); handler(e) }}'"
+fi</code></pre>
+          </div>
+
+          <p class="settings-label">settings.json wiring</p>
+          <div class="pre-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><code>{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [{ "type": "command", "command": "~/.claude/hooks/svelte5-lint.sh" }]
+      }
+    ]
+  }
+}</code></pre>
+          </div>
+
+          <ul class="catches-list">
+            <li><code>on:click={handler}</code> — Svelte 4, rejected by Svelte 5 compiler</li>
+            <li><code>on:input|preventDefault</code> — modifier syntax, also removed</li>
+            <li><code>on:keydown</code> in a component that was copy-pasted from old code</li>
+          </ul>
+        </div>
+      </details>
+    </div>
+
+    <!-- 10. rust-check -->
+    <div class="hook-card informing">
+      <details>
+        <summary>
+          rust-check.sh
+          <span class="summary-meta">
+            <span class="badge badge-blue">PostToolUse</span>
+            <span class="badge badge-blue">INFORMS</span>
+            <span class="badge badge-yellow">Edit|Write</span>
+          </span>
+        </summary>
+        <div class="hook-body">
+          <div class="hook-meta-row">
+            <div class="hook-meta-item"><strong>Matcher</strong><code>Edit|Write</code></div>
+            <div class="hook-meta-item"><strong>Purpose</strong>Run cargo check after editing .rs files</div>
+          </div>
+
+          <p>Finds the <code>Cargo.toml</code> root above the edited file, runs <code>cargo check</code>, and prints the first 20 error lines. <code>cargo check</code> is faster than <code>cargo build</code> because it skips code generation — ideal for tight feedback loops.</p>
+
+          <p class="settings-label">Script &mdash; ~/.claude/hooks/rust-check.sh</p>
+          <div class="pre-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><code>#!/bin/bash
+INPUT=$(cat)
+FILE=$(echo "$INPUT" | python3 -c \
+  "import json,sys; print(json.load(sys.stdin).get('tool_input',{}).get('file_path',''))" \
+  2>/dev/null || echo "")
+
+[[ "$FILE" == *.rs ]] || exit 0
+
+DIR=$(dirname "$FILE")
+CARGO_ROOT="$DIR"
+while [[ "$CARGO_ROOT" != "/" &amp;&amp; ! -f "$CARGO_ROOT/Cargo.toml" ]]; do
+  CARGO_ROOT=$(dirname "$CARGO_ROOT")
+done
+[[ -f "$CARGO_ROOT/Cargo.toml" ]] || exit 0
+
+cd "$CARGO_ROOT"
+RESULT=$(cargo check 2&gt;&amp;1) || true
+if echo "$RESULT" | grep -q "^error"; then
+  echo "--- cargo check ($CARGO_ROOT) ---"
+  echo "$RESULT" | head -20
+fi</code></pre>
+          </div>
+
+          <p class="settings-label">settings.json wiring</p>
+          <div class="pre-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><code>{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [{ "type": "command", "command": "~/.claude/hooks/rust-check.sh" }]
+      }
+    ]
+  }
+}</code></pre>
+          </div>
+
+          <ul class="catches-list">
+            <li>Borrow checker violation after a struct field change</li>
+            <li>Lifetime annotation error introduced by a refactor</li>
+            <li>Trait bound missing on a new generic parameter</li>
+          </ul>
+        </div>
+      </details>
+    </div>
+
+    <!-- 11. ts-check -->
+    <div class="hook-card informing">
+      <details>
+        <summary>
+          ts-check.sh
+          <span class="summary-meta">
+            <span class="badge badge-blue">PostToolUse</span>
+            <span class="badge badge-blue">INFORMS</span>
+            <span class="badge badge-yellow">Edit|Write</span>
+          </span>
+        </summary>
+        <div class="hook-body">
+          <div class="hook-meta-row">
+            <div class="hook-meta-item"><strong>Matcher</strong><code>Edit|Write</code></div>
+            <div class="hook-meta-item"><strong>Purpose</strong>Run tsc --noEmit after editing .ts/.tsx files</div>
+          </div>
+
+          <p>Walks up from the edited file to find <code>tsconfig.json</code>, runs <code>npx tsc --noEmit</code>, and prints errors. <code>--noEmit</code> means type-check only — no output files generated, fast turnaround.</p>
+
+          <p class="settings-label">Script &mdash; ~/.claude/hooks/ts-check.sh</p>
+          <div class="pre-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><code>#!/bin/bash
+INPUT=$(cat)
+FILE=$(echo "$INPUT" | python3 -c \
+  "import json,sys; print(json.load(sys.stdin).get('tool_input',{}).get('file_path',''))" \
+  2>/dev/null || echo "")
+
+echo "$FILE" | grep -qE '\.(ts|tsx)$' || exit 0
+
+DIR=$(dirname "$FILE")
+TSC_ROOT="$DIR"
+while [[ "$TSC_ROOT" != "/" &amp;&amp; ! -f "$TSC_ROOT/tsconfig.json" ]]; do
+  TSC_ROOT=$(dirname "$TSC_ROOT")
+done
+[[ -f "$TSC_ROOT/tsconfig.json" ]] || exit 0
+
+cd "$TSC_ROOT"
+RESULT=$(npx tsc --noEmit 2&gt;&amp;1) || true
+if [[ -n "$RESULT" ]]; then
+  echo "--- tsc --noEmit ($TSC_ROOT) ---"
+  echo "$RESULT"
+fi</code></pre>
+          </div>
+
+          <p class="settings-label">settings.json wiring</p>
+          <div class="pre-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><code>{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [{ "type": "command", "command": "~/.claude/hooks/ts-check.sh" }]
+      }
+    ]
+  }
+}</code></pre>
+          </div>
+
+          <ul class="catches-list">
+            <li>Property does not exist on a type after an interface change</li>
+            <li>Missing <code>await</code> on an async call that returns <code>Promise&lt;T&gt;</code></li>
+            <li>Incorrect argument types in a function call</li>
+          </ul>
+        </div>
+      </details>
+    </div>
+
+    <!-- 12. skill-validate -->
+    <div class="hook-card informing">
+      <details>
+        <summary>
+          skill-validate.sh
+          <span class="summary-meta">
+            <span class="badge badge-blue">PostToolUse</span>
+            <span class="badge badge-blue">INFORMS</span>
+            <span class="badge badge-yellow">Edit|Write</span>
+          </span>
+        </summary>
+        <div class="hook-body">
+          <div class="hook-meta-row">
+            <div class="hook-meta-item"><strong>Matcher</strong><code>Edit|Write</code></div>
+            <div class="hook-meta-item"><strong>Purpose</strong>Validate SKILL.md files against A+ quality standards</div>
+          </div>
+
+          <p>Fires only on edits to files matching the CoworkPlugins skill path pattern. Checks: YAML frontmatter present, all required fields (<code>name</code>, <code>description</code>, <code>model</code>, <code>category</code>), non-stub description with a trigger cue, line count under 500, model value is <code>sonnet</code> or <code>opus</code>, required sections present, no dead <code>/home/ubuntu</code> paths.</p>
+
+          <p class="settings-label">Script &mdash; ~/.claude/hooks/skill-validate.sh</p>
+          <div class="pre-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><code>#!/bin/bash
+INPUT=$(cat)
+FILE=$(echo "$INPUT" | python3 -c \
+  "import json,sys; d=json.load(sys.stdin); print(d.get('tool_input',{}).get('file_path',''))" \
+  2>/dev/null || echo "")
+
+case "$FILE" in
+  */CoworkPluginsByDojoGenesis/plugins/*/skills/*/SKILL.md) ;;
+  *) exit 0 ;;
+esac
+[ ! -f "$FILE" ] &amp;&amp; exit 0
+
+ERRORS=""
+
+if ! head -1 "$FILE" | grep -q "^---"; then
+  ERRORS="${ERRORS}\n  - Missing YAML frontmatter"
+fi
+
+for field in name description model category; do
+  if ! head -25 "$FILE" | grep -q "^${field}:"; then
+    ERRORS="${ERRORS}\n  - Missing required field: ${field}"
+  fi
+done
+
+DESC=$(head -25 "$FILE" | grep "^description:" | sed 's/^description:[[:space:]]*//')
+if [ -z "$DESC" ] || [ "$DESC" = ">" ] || [ "$DESC" = '""' ]; then
+  ERRORS="${ERRORS}\n  - Description is empty or stub"
+fi
+
+LINES=$(wc -l &lt; "$FILE" | tr -d ' ')
+if [ "$LINES" -gt 500 ]; then
+  ERRORS="${ERRORS}\n  - ${LINES} lines exceeds 500-line limit"
+fi
+
+MODEL=$(head -25 "$FILE" | grep "^model:" | sed 's/^model:[[:space:]]*//')
+if [ -n "$MODEL" ] &amp;&amp; [ "$MODEL" != "sonnet" ] &amp;&amp; [ "$MODEL" != "opus" ]; then
+  ERRORS="${ERRORS}\n  - model: '${MODEL}' must be 'sonnet' or 'opus'"
+fi
+
+for section in "## Output" "## Examples" "## Edge Cases" "## Anti-Patterns"; do
+  if ! grep -qF "$section" "$FILE" 2>/dev/null; then
+    ERRORS="${ERRORS}\n  - Missing section: '${section}'"
+  fi
+done
+
+if grep -q "/home/ubuntu" "$FILE" 2>/dev/null; then
+  COUNT=$(grep -c "/home/ubuntu" "$FILE")
+  ERRORS="${ERRORS}\n  - ${COUNT} dead path(s) referencing /home/ubuntu/"
+fi
+
+DESC_LOWER=$(echo "$DESC" | tr '[:upper:]' '[:lower:]')
+if [ -n "$DESC" ] &amp;&amp; ! echo "$DESC_LOWER" | grep -qE "use when|trigger|produces|generates|creates|writes|returns|outputs"; then
+  ERRORS="${ERRORS}\n  - Description has no trigger cue"
+fi
+
+if [ -n "$ERRORS" ]; then
+  echo "--- skill-validate: $(basename "$(dirname "$FILE")")/SKILL.md ---"
+  echo -e "$ERRORS"
+fi</code></pre>
+          </div>
+
+          <p class="settings-label">settings.json wiring</p>
+          <div class="pre-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><code>{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [{ "type": "command", "command": "~/.claude/hooks/skill-validate.sh" }]
+      }
+    ]
+  }
+}</code></pre>
+          </div>
+
+          <ul class="catches-list">
+            <li>SKILL.md written without required <code>## Examples</code> section</li>
+            <li>Model field set to <code>claude-sonnet-4</code> instead of <code>sonnet</code></li>
+            <li>Description is a placeholder with no trigger cue</li>
+            <li>Dead <code>/home/ubuntu/</code> path from an agent that ran on a remote machine</li>
+          </ul>
+        </div>
+      </details>
+    </div>
+
+    <!-- 13. agent-log -->
+    <div class="hook-card informing">
+      <details>
+        <summary>
+          agent-log.sh
+          <span class="summary-meta">
+            <span class="badge badge-blue">PostToolUse</span>
+            <span class="badge badge-blue">INFORMS</span>
+            <span class="badge badge-yellow">Agent</span>
+          </span>
+        </summary>
+        <div class="hook-body">
+          <div class="hook-meta-row">
+            <div class="hook-meta-item"><strong>Matcher</strong><code>Agent</code></div>
+            <div class="hook-meta-item"><strong>Purpose</strong>Log every agent dispatch; fire macOS notification on finish</div>
+          </div>
+
+          <p>Appends a timestamped record to <code>~/.claude/agent-spawns.log</code> for every agent dispatch. On macOS, fires a notification via <code>osascript</code> when the agent completes — useful for context-switching during long runs. On Linux, replace the <code>osascript</code> call with <code>notify-send</code>.</p>
+
+          <p class="settings-label">Script &mdash; ~/.claude/hooks/agent-log.sh</p>
+          <div class="pre-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><code>#!/bin/bash
+INPUT=$(cat)
+
+MODEL=$(echo "$INPUT" | python3 -c \
+  "import json,sys; d=json.load(sys.stdin); print(d.get('tool_input',{}).get('model','unknown'))" \
+  2>/dev/null || echo "unknown")
+DESC=$(echo "$INPUT" | python3 -c \
+  "import json,sys; d=json.load(sys.stdin); print(d.get('tool_input',{}).get('description','(no description)')[:80])" \
+  2>/dev/null || echo "(no description)")
+
+TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+LOG="$HOME/.claude/agent-spawns.log"
+mkdir -p "$(dirname "$LOG")"
+echo "${TIMESTAMP}  model=${MODEL}  desc=${DESC}" &gt;&gt; "$LOG"
+
+# macOS notification (replace with notify-send on Linux)
+if command -v osascript &gt;/dev/null 2&gt;&amp;1; then
+  osascript -e "display notification \"Agent finished: ${DESC}\" with title \"Claude Code\" sound name \"Submarine\"" 2&gt;/dev/null || true
+fi</code></pre>
+          </div>
+
+          <p class="settings-label">settings.json wiring</p>
+          <div class="pre-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><code>{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Agent",
+        "hooks": [{ "type": "command", "command": "~/.claude/hooks/agent-log.sh" }]
+      }
+    ]
+  }
+}</code></pre>
+          </div>
+
+          <ul class="catches-list">
+            <li>Audit trail of every agent dispatch with model and description</li>
+            <li>macOS notification lets you context-switch while agents run</li>
+            <li>Log file useful for debugging false-completion reports</li>
+          </ul>
+        </div>
+      </details>
+    </div>
+
+    <!-- 14. agent-model-enforce -->
+    <div class="hook-card informing">
+      <details>
+        <summary>
+          agent-model-enforce.sh
+          <span class="summary-meta">
+            <span class="badge badge-blue">PostToolUse</span>
+            <span class="badge badge-blue">INFORMS</span>
+            <span class="badge badge-yellow">Agent</span>
+          </span>
+        </summary>
+        <div class="hook-body">
+          <div class="hook-meta-row">
+            <div class="hook-meta-item"><strong>Matcher</strong><code>Agent</code></div>
+            <div class="hook-meta-item"><strong>Purpose</strong>Warn when an agent is dispatched without an explicit model</div>
+          </div>
+
+          <p>Checks the <code>model</code> field in the Agent tool input. If absent or empty, prints a routing guidance reminder. This is informational — it cannot block the dispatch (PostToolUse). But the consistent nudge prevents model selection from drifting to implicit defaults over time.</p>
+
+          <p class="settings-label">Script &mdash; ~/.claude/hooks/agent-model-enforce.sh</p>
+          <div class="pre-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><code>#!/bin/bash
+INPUT=$(cat)
+
+MODEL=$(echo "$INPUT" | python3 -c \
+  "import json,sys; d=json.load(sys.stdin); print(d.get('tool_input',{}).get('model',''))" \
+  2>/dev/null || echo "")
+DESC=$(echo "$INPUT" | python3 -c \
+  "import json,sys; d=json.load(sys.stdin); print(d.get('tool_input',{}).get('description','(no description)')[:60])" \
+  2>/dev/null || echo "(no description)")
+
+if [ -z "$MODEL" ]; then
+  echo "--- agent-model-enforce ---"
+  echo "WARNING: Agent dispatched without explicit model: \"${DESC}\""
+  echo ""
+  echo "Routing guidance:"
+  echo "  model: sonnet  — parsing, bulk work, templates, audits, file writes (~80% of dispatches)"
+  echo "  model: opus    — architecture decisions, synthesis, strategic reasoning (~20%)"
+  echo ""
+  echo "Add 'model: sonnet' or 'model: opus' to the Agent call."
+fi</code></pre>
+          </div>
+
+          <p class="settings-label">settings.json wiring</p>
+          <div class="pre-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><code>{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Agent",
+        "hooks": [
+          { "type": "command", "command": "~/.claude/hooks/agent-log.sh" },
+          { "type": "command", "command": "~/.claude/hooks/agent-model-enforce.sh" }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+          </div>
+
+          <ul class="catches-list">
+            <li>Agent dispatch missing the <code>model</code> parameter entirely</li>
+            <li>Reminds the 80/20 Sonnet/Opus split rule at the moment of dispatch</li>
+          </ul>
+        </div>
+      </details>
+    </div>
+
+    <!-- ── Group: UserPromptSubmit ── -->
+    <div class="group-header">
+      <h3>UserPromptSubmit &mdash; Context Injection</h3>
+      <span class="badge badge-green">INJECTS context</span>
+      <span class="group-rule">fires before Claude sees the message; echo output is prepended</span>
+    </div>
+
+    <!-- 15. context-inject -->
+    <div class="hook-card injecting">
+      <details>
+        <summary>
+          context-inject.sh
+          <span class="summary-meta">
+            <span class="badge badge-green">UserPromptSubmit</span>
+            <span class="badge badge-green">INJECTS</span>
+            <span class="badge badge-gray">""</span>
+          </span>
+        </summary>
+        <div class="hook-body">
+          <div class="hook-meta-row">
+            <div class="hook-meta-item"><strong>Matcher</strong><code>""</code> (all prompts)</div>
+            <div class="hook-meta-item"><strong>Purpose</strong>Inject CWD, branch, dirty count, and commits ahead at every turn</div>
+          </div>
+
+          <p>Every turn starts with current working directory, the active git branch, how many files are uncommitted, and how many commits are ahead of origin. This eliminates the common failure mode where Claude acts on stale branch assumptions from earlier in the session.</p>
+
+          <p class="settings-label">Script &mdash; ~/.claude/hooks/context-inject.sh</p>
+          <div class="pre-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><code>#!/bin/bash
+CWD=$(pwd)
+BRANCH=$(git branch --show-current 2>/dev/null || echo "not a git repo")
+DIRTY=$(git status --porcelain 2>/dev/null | wc -l | tr -d ' ')
+AHEAD=$(git log @{u}.. --oneline 2>/dev/null | wc -l | tr -d ' ')
+STASH=$(git stash list 2>/dev/null | wc -l | tr -d ' ')
+
+echo "[Session context]"
+echo "  CWD:    $CWD"
+echo "  Branch: $BRANCH"
+echo "  Dirty:  $DIRTY files uncommitted"
+[ "$AHEAD" -gt 0 ] 2>/dev/null &amp;&amp; echo "  Ahead:  $AHEAD commits unpushed"
+[ "$STASH" -gt 0 ] 2>/dev/null &amp;&amp; echo "  Stash:  $STASH entries"
+echo ""</code></pre>
+          </div>
+
+          <p class="settings-label">settings.json wiring</p>
+          <div class="pre-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><code>{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [{ "type": "command", "command": "~/.claude/hooks/context-inject.sh" }]
+      }
+    ]
+  }
+}</code></pre>
+          </div>
+
+          <ul class="catches-list">
+            <li>Claude assumes wrong branch mid-session after a manual checkout</li>
+            <li>Dirty file count reveals parallel session work before it causes confusion</li>
+            <li>Unpushed commits visible before Claude suggests pushing</li>
+          </ul>
+        </div>
+      </details>
+    </div>
+
+    <!-- 16. drift-detector -->
+    <div class="hook-card injecting">
+      <details>
+        <summary>
+          drift-detector.sh
+          <span class="summary-meta">
+            <span class="badge badge-green">UserPromptSubmit</span>
+            <span class="badge badge-green">INJECTS</span>
+            <span class="badge badge-gray">""</span>
+          </span>
+        </summary>
+        <div class="hook-body">
+          <div class="hook-meta-row">
+            <div class="hook-meta-item"><strong>Matcher</strong><code>""</code> (all prompts)</div>
+            <div class="hook-meta-item"><strong>Purpose</strong>Detect strategic drift across repos — YELLOW at 10+ dirty / 4+ sessions, RED at 25+ / 6+</div>
+          </div>
+
+          <p>Checks dirty file counts across all watched repos, reads the convergence ledger for sessions-since-last-convergence, counts open items in MEMORY.md. Silent when GREEN. Outputs a drift warning with repo breakdown when YELLOW or RED. RED includes a recommendation to run <code>/converge</code> before starting new feature work.</p>
+
+          <p class="settings-label">Script &mdash; ~/.claude/hooks/drift-detector.sh</p>
+          <div class="pre-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><code>#!/bin/bash
+# ── Configure these paths for your workspace ──
+REPOS=(
+  "$HOME/ZenflowProjects/DojoGenesis/cli"
+  "$HOME/ZenflowProjects/AgenticGatewayByDojoGenesis"
+  "$HOME/ZenflowProjects/CoworkPluginsByDojoGenesis"
+  "$HOME/ZenflowProjects/LogwatcherByDojoGenesis"
+)
+LEDGER="$HOME/.claude/convergence-ledger.md"
+MEMORY_DIR="$HOME/.claude/projects/-Users-$(whoami)-ZenflowProjects/memory"
+
+TOTAL_DIRTY=0
+DIRTY_REPOS=""
+
+for repo in "${REPOS[@]}"; do
+  if [ -d "$repo/.git" ]; then
+    count=$(git -C "$repo" status --porcelain 2>/dev/null | wc -l | tr -d ' ')
+    if [ "$count" -gt 0 ]; then
+      name=$(basename "$repo")
+      DIRTY_REPOS="${DIRTY_REPOS}  ${name}: ${count} files\n"
+      TOTAL_DIRTY=$((TOTAL_DIRTY + count))
+    fi
+  fi
+done
+
+SESSIONS_SINCE=0
+LAST_CONVERGE=""
+if [ -f "$LEDGER" ]; then
+  SESSIONS_SINCE=$(grep -c "^session:" "$LEDGER" 2>/dev/null || echo 0)
+  LAST_CONVERGE=$(grep "^converged:" "$LEDGER" | tail -1 | awk '{print $2}')
+fi
+
+OPEN_ITEMS=0
+if [ -f "$MEMORY_DIR/MEMORY.md" ]; then
+  OPEN_ITEMS=$(awk '/^## Open Items/{flag=1;next}/^## /{flag=0}flag &amp;&amp; /^- /' \
+    "$MEMORY_DIR/MEMORY.md" | wc -l)
+fi
+
+# Append to ledger
+mkdir -p "$(dirname "$LEDGER")"
+echo "session: $(date '+%Y-%m-%d %H:%M') dirty=${TOTAL_DIRTY} open=${OPEN_ITEMS}" &gt;&gt; "$LEDGER"
+
+# Determine level
+LEVEL="GREEN"
+if [ "$TOTAL_DIRTY" -ge 25 ] || [ "$SESSIONS_SINCE" -ge 6 ]; then
+  LEVEL="RED"
+elif [ "$TOTAL_DIRTY" -ge 10 ] || [ "$SESSIONS_SINCE" -ge 4 ]; then
+  LEVEL="YELLOW"
+fi
+
+[ "$LEVEL" = "GREEN" ] &amp;&amp; exit 0
+
+echo "[Drift Detection: ${LEVEL}]"
+echo "Sessions since convergence: ${SESSIONS_SINCE}"
+echo "Uncommitted files: ${TOTAL_DIRTY}"
+[ -n "$DIRTY_REPOS" ] &amp;&amp; printf "Dirty repos:\n${DIRTY_REPOS}"
+echo "Open items: ${OPEN_ITEMS}"
+[ -n "$LAST_CONVERGE" ] &amp;&amp; echo "Last convergence: ${LAST_CONVERGE}"
+[ "$LEVEL" = "RED" ] &amp;&amp; echo "RECOMMENDATION: Run /converge before starting new feature work."
+echo ""</code></pre>
+          </div>
+
+          <p class="settings-label">settings.json wiring</p>
+          <div class="pre-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><code>{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          { "type": "command", "command": "~/.claude/hooks/context-inject.sh" },
+          { "type": "command", "command": "~/.claude/hooks/drift-detector.sh" }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+          </div>
+
+          <ul class="catches-list">
+            <li>4 sessions of parallel work accumulate without a convergence commit</li>
+            <li>25+ dirty files across repos signal unintegrated work before starting another feature</li>
+            <li>Ledger persists across sessions — drift accumulates correctly even after restarts</li>
+          </ul>
+        </div>
+      </details>
+    </div>
+
+    <!-- ── Group: Stop ── -->
+    <div class="group-header">
+      <h3>Stop &mdash; Session End</h3>
+      <span class="badge badge-gray">FIRES on session end</span>
+      <span class="group-rule">matcher "" fires on every stop event</span>
+    </div>
+
+    <!-- 17. done-notification -->
+    <div class="hook-card stopping">
+      <details>
+        <summary>
+          done-notification.sh
+          <span class="summary-meta">
+            <span class="badge badge-gray">Stop</span>
+            <span class="badge badge-gray">FIRES</span>
+            <span class="badge badge-gray">""</span>
+          </span>
+        </summary>
+        <div class="hook-body">
+          <div class="hook-meta-row">
+            <div class="hook-meta-item"><strong>Matcher</strong><code>""</code></div>
+            <div class="hook-meta-item"><strong>Purpose</strong>Fire macOS notification when Claude finishes a task</div>
+          </div>
+
+          <p>The simplest hook. When the session ends, fires a macOS notification so you can context-switch during long runs and come back when Claude is actually done. On Linux, replace <code>osascript</code> with <code>notify-send</code>.</p>
+
+          <p class="settings-label">Script &mdash; ~/.claude/hooks/done-notification.sh</p>
+          <div class="pre-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><code>#!/bin/bash
+if command -v osascript &gt;/dev/null 2&gt;&amp;1; then
+  osascript -e 'display notification "Claude finished." with title "Claude Code" sound name "Glass"' \
+    2>/dev/null || true
+elif command -v notify-send &gt;/dev/null 2&gt;&amp;1; then
+  notify-send "Claude Code" "Claude finished." 2>/dev/null || true
+fi</code></pre>
+          </div>
+
+          <p class="settings-label">settings.json wiring</p>
+          <div class="pre-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><code>{
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [{ "type": "command", "command": "~/.claude/hooks/done-notification.sh" }]
+      }
+    ]
+  }
+}</code></pre>
+          </div>
+
+          <ul class="catches-list">
+            <li>You tab away during a long multi-file refactor and get pinged when it finishes</li>
+            <li>Paired with agent-log.sh: notification fires both when agent completes and when main session ends</li>
+          </ul>
+        </div>
+      </details>
+    </div>
+
+    <!-- ── Group: External ── -->
+    <div class="group-header">
+      <h3>External &mdash; Cron / Scheduled</h3>
+      <span class="badge badge-purple">NOT in settings.json</span>
+      <span class="group-rule">called externally via cron or a scheduler</span>
+    </div>
+
+    <!-- 18. nightly-build-sweep -->
+    <div class="hook-card external">
+      <details>
+        <summary>
+          nightly-build-sweep.sh
+          <span class="summary-meta">
+            <span class="badge badge-purple">External</span>
+            <span class="badge badge-purple">Cron</span>
+          </span>
+        </summary>
+        <div class="hook-body">
+          <div class="hook-meta-row">
+            <div class="hook-meta-item"><strong>Trigger</strong>Cron or scheduler — NOT a Claude hook event</div>
+            <div class="hook-meta-item"><strong>Purpose</strong>Discover all go.mod files under workspace, build + test each nightly</div>
+          </div>
+
+          <p>Not wired in <code>settings.json</code> — called by cron or a task scheduler. Discovers every <code>go.mod</code> under the workspace root, runs <code>go build ./...</code> and <code>go test ./...</code> on each, logs results to <code>~/.claude/nightly-build.log</code>, and fires a macOS notification summarizing pass/fail counts. Run it nightly to catch regressions before the next session.</p>
+
+          <p class="settings-label">Script &mdash; ~/.claude/hooks/nightly-build-sweep.sh</p>
+          <div class="pre-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><code>#!/bin/bash
+WORKSPACE="${1:-$HOME/ZenflowProjects}"
+LOG="$HOME/.claude/nightly-build.log"
+TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+PASS=0
+FAIL=0
+FAILURES=""
+
+mkdir -p "$(dirname "$LOG")"
+echo "" &gt;&gt; "$LOG"
+echo "=== nightly-build-sweep: $TIMESTAMP ===" &gt;&gt; "$LOG"
+
+while IFS= read -r modfile; do
+  MOD_DIR=$(dirname "$modfile")
+  # Skip vendor directories
+  echo "$MOD_DIR" | grep -q "/vendor/" &amp;&amp; continue
+
+  BUILD_OUT=$(cd "$MOD_DIR" &amp;&amp; go build ./... 2&gt;&amp;1)
+  BUILD_OK=$?
+
+  TEST_OUT=$(cd "$MOD_DIR" &amp;&amp; go test ./... -timeout 120s 2&gt;&amp;1)
+  TEST_OK=$?
+
+  REL_DIR="${MOD_DIR#$WORKSPACE/}"
+
+  if [ "$BUILD_OK" -eq 0 ] &amp;&amp; [ "$TEST_OK" -eq 0 ]; then
+    echo "  PASS  $REL_DIR" &gt;&gt; "$LOG"
+    PASS=$((PASS + 1))
+  else
+    echo "  FAIL  $REL_DIR" &gt;&gt; "$LOG"
+    [ -n "$BUILD_OUT" ] &amp;&amp; echo "    build: $BUILD_OUT" &gt;&gt; "$LOG"
+    echo "$TEST_OUT" | grep -E '^(FAIL|---\s+FAIL)' | while IFS= read -r line; do
+      echo "    test: $line" &gt;&gt; "$LOG"
+    done
+    FAIL=$((FAIL + 1))
+    FAILURES="$FAILURES\n  - $REL_DIR"
+  fi
+done &lt; &lt;(find "$WORKSPACE" -name "go.mod" \
+  -not -path "*/vendor/*" \
+  -not -path "*/.git/*" \
+  2>/dev/null)
+
+SUMMARY="${PASS} passed, ${FAIL} failed"
+echo "Summary: $SUMMARY" &gt;&gt; "$LOG"
+
+# macOS notification
+if command -v osascript &gt;/dev/null 2&gt;&amp;1; then
+  if [ "$FAIL" -gt 0 ]; then
+    osascript -e "display notification \"${FAIL} modules failed build/test\" with title \"Nightly Build Sweep\" sound name \"Basso\"" 2&gt;/dev/null || true
+  else
+    osascript -e "display notification \"All ${PASS} modules passing\" with title \"Nightly Build Sweep\" sound name \"Glass\"" 2&gt;/dev/null || true
+  fi
+fi</code></pre>
+          </div>
+
+          <p class="settings-label">Cron setup (run nightly at 2am)</p>
+          <div class="pre-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><code># Add to crontab: crontab -e
+0 2 * * * /bin/bash ~/.claude/hooks/nightly-build-sweep.sh "$HOME/ZenflowProjects" >> ~/.claude/nightly-build-sweep.stderr 2>&1</code></pre>
+          </div>
+
+          <ul class="catches-list">
+            <li>Regression introduced during an afternoon session shows up in morning log</li>
+            <li>Catches multi-module breakage that per-file hooks miss (hook only fires for the edited file's module)</li>
+            <li>Log at <code>~/.claude/nightly-build.log</code> gives historical record</li>
+          </ul>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ──────────────────────────────────────────── -->
+  <!-- Section 4: Build Your Own Hook               -->
+  <!-- ──────────────────────────────────────────── -->
+  <section id="build-your-own">
+    <h2><span class="section-num">4</span> Build Your Own Hook</h2>
+    <p class="section-desc">Six steps from blank script to wired hook, with three starter templates.</p>
+
+    <ol class="step-list">
+      <li><span class="step-n">1</span><span>Create the script at <code>~/.claude/hooks/your-hook.sh</code>. Keeping all hooks in one directory makes the settings.json paths predictable.</span></li>
+      <li><span class="step-n">2</span><span>Make it executable: <code>chmod +x ~/.claude/hooks/your-hook.sh</code>. The harness will silently skip non-executable files.</span></li>
+      <li><span class="step-n">3</span><span>Read stdin as JSON: <code>INPUT=$(cat)</code>. Parse fields with python3: <code>python3 -c "import json,sys; print(json.load(sys.stdin).get('tool_input',{}).get('command',''))"</code>. For Edit/Write tools, the relevant field is <code>file_path</code>. For Bash, it is <code>command</code>. For Agent, it is <code>model</code> and <code>description</code>.</span></li>
+      <li><span class="step-n">4</span><span>For PreToolUse: <code>exit 2</code> to block, <code>exit 0</code> to allow. Print a human-readable explanation to stderr before exiting 2 — the harness surfaces it to the user.</span></li>
+      <li><span class="step-n">5</span><span>For PostToolUse: just echo output, exit 0 or exit 1. Exit 2 has no effect. The harness will display your stdout in the conversation.</span></li>
+      <li><span class="step-n">6</span><span>Wire in <code>~/.claude/settings.json</code> under the right event + matcher. Multiple hooks on the same event run in array order — later hooks still run even if an earlier one exits 2 (for PreToolUse, the <em>action</em> is blocked, but remaining hooks in the array still execute).</span></li>
+    </ol>
+
+    <h3>Starter Template A: PreToolUse Blocker</h3>
+    <p>The simplest blocking hook — one grep, one block. Copy this and replace the pattern.</p>
+    <div class="pre-wrap">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      <pre><code>#!/bin/bash
+# Starter: PreToolUse blocker
+INPUT=$(cat)
+CMD=$(echo "$INPUT" | python3 -c \
+  "import json,sys; print(json.load(sys.stdin).get('tool_input',{}).get('command',''))" \
+  2>/dev/null || echo "")
+
+# Replace this pattern with whatever you want to block
+if echo "$CMD" | grep -qE 'YOUR_DANGEROUS_PATTERN'; then
+  echo "BLOCKED: reason why this is dangerous" &gt;&amp;2
+  exit 2
+fi
+
+exit 0</code></pre>
+    </div>
+
+    <h3>Starter Template B: PostToolUse Feedback Loop</h3>
+    <p>Runs a check after every edit to a matching file type, prints results if non-empty.</p>
+    <div class="pre-wrap">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      <pre><code>#!/bin/bash
+# Starter: PostToolUse feedback loop
+INPUT=$(cat)
+FILE=$(echo "$INPUT" | python3 -c \
+  "import json,sys; print(json.load(sys.stdin).get('tool_input',{}).get('file_path',''))" \
+  2>/dev/null || echo "")
+
+# Gate on file extension
+[[ "$FILE" == *.YOUR_EXT ]] || exit 0
+[[ -f "$FILE" ]] || exit 0
+
+# Run your check — capture output
+RESULT=$(your-check-command "$FILE" 2&gt;&amp;1) || true
+
+# Print if non-empty
+if [[ -n "$RESULT" ]]; then
+  echo "--- your-check-name: $(basename "$FILE") ---"
+  echo "$RESULT"
+fi</code></pre>
+    </div>
+
+    <h3>Starter Template C: UserPromptSubmit Context Injector</h3>
+    <p>Gathers state at the start of every turn and prepends it to the prompt as context.</p>
+    <div class="pre-wrap">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      <pre><code>#!/bin/bash
+# Starter: UserPromptSubmit context injector
+# Anything echoed here is prepended to the user's prompt before Claude sees it.
+
+STATE_A=$(your-command-a 2>/dev/null || echo "unavailable")
+STATE_B=$(your-command-b 2>/dev/null || echo "unavailable")
+
+# Only output when there is something meaningful to say
+if [[ "$STATE_A" != "unavailable" || "$STATE_B" != "unavailable" ]]; then
+  echo "[Context: your-label]"
+  echo "  State A: $STATE_A"
+  echo "  State B: $STATE_B"
+  echo ""
+fi</code></pre>
+    </div>
+  </section>
+
+  <!-- ──────────────────────────────────────────── -->
+  <!-- Section 5: Complete settings.json            -->
+  <!-- ──────────────────────────────────────────── -->
+  <section id="settings-json">
+    <h2><span class="section-num">5</span> Complete settings.json</h2>
+    <p class="section-desc">All 18 hooks wired. Copy this, replace the paths, remove the hooks you don't want.</p>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">&#8505;</span>
+      <div>
+        <p><code>settings.json</code> lives at <code>~/.claude/settings.json</code> for global hooks, or <code>.claude/settings.json</code> inside a project directory for project-scoped hooks. Project settings merge with global settings — project hooks run in addition to global hooks, not instead of them.</p>
+      </div>
+    </div>
+
+    <div class="pre-wrap">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      <pre><code>{
+  "hooks": {
+
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          // Block catastrophic rm -rf, git reset --hard, git checkout --, git clean -f
+          { "type": "command", "command": "~/.claude/hooks/destructive-guard.sh" },
+          // Hard block force push to main/master; warn on any other branch
+          { "type": "command", "command": "~/.claude/hooks/force-push-guard.sh" },
+          // Block git commit if staged .go files fail go build ./...
+          { "type": "command", "command": "~/.claude/hooks/pre-commit-build-gate.sh" },
+          // Block git commit if staged .ts/.rs files have compilation errors
+          { "type": "command", "command": "~/.claude/hooks/pre-commit-multi-lang-gate.sh" },
+          // Block git tag unless full build + lint + test + e2e pass
+          { "type": "command", "command": "~/.claude/hooks/milestone-gate.sh" }
+        ]
+      }
+    ],
+
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          // Run go build after editing non-test .go files
+          { "type": "command", "command": "~/.claude/hooks/go-build-check.sh" },
+          // Run go vet after editing .go files (catches correctness issues build misses)
+          { "type": "command", "command": "~/.claude/hooks/go-vet-check.sh" },
+          // Run go test after editing *_test.go files
+          { "type": "command", "command": "~/.claude/hooks/go-test-check.sh" },
+          // Flag Svelte 4 on: event directives in .svelte files
+          { "type": "command", "command": "~/.claude/hooks/svelte5-lint.sh" },
+          // Run cargo check after editing .rs files
+          { "type": "command", "command": "~/.claude/hooks/rust-check.sh" },
+          // Run tsc --noEmit after editing .ts/.tsx files
+          { "type": "command", "command": "~/.claude/hooks/ts-check.sh" },
+          // Validate SKILL.md files against A+ quality standards
+          { "type": "command", "command": "~/.claude/hooks/skill-validate.sh" }
+        ]
+      },
+      {
+        "matcher": "Agent",
+        "hooks": [
+          // Log every agent dispatch to ~/.claude/agent-spawns.log + macOS notification
+          { "type": "command", "command": "~/.claude/hooks/agent-log.sh" },
+          // Warn when agent dispatched without explicit model parameter
+          { "type": "command", "command": "~/.claude/hooks/agent-model-enforce.sh" }
+        ]
+      }
+    ],
+
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          // Inject CWD, branch, dirty count, commits ahead at every turn
+          { "type": "command", "command": "~/.claude/hooks/context-inject.sh" },
+          // Detect drift: YELLOW at 10+ dirty/4+ sessions, RED at 25+/6+
+          { "type": "command", "command": "~/.claude/hooks/drift-detector.sh" }
+        ]
+      }
+    ],
+
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          // macOS notification when Claude finishes
+          { "type": "command", "command": "~/.claude/hooks/done-notification.sh" }
+        ]
+      }
+    ]
+
+  }
+}</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">&#9888;</span>
+      <div>
+        <p><strong>JSON does not allow comments.</strong> The block above uses <code>//</code> comments for readability — remove them before saving as actual <code>settings.json</code>. A JSON parse error silently disables all hooks.</p>
+      </div>
+    </div>
+
+    <h3>Minimal starter (just the three safety gates)</h3>
+    <p>If you want only the blocking guards with no feedback noise, start here and add hooks incrementally:</p>
+    <div class="pre-wrap">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      <pre><code>{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "command": "~/.claude/hooks/destructive-guard.sh" },
+          { "type": "command", "command": "~/.claude/hooks/force-push-guard.sh" },
+          { "type": "command", "command": "~/.claude/hooks/pre-commit-build-gate.sh" }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          { "type": "command", "command": "~/.claude/hooks/done-notification.sh" }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+    </div>
+  </section>
+
+  <footer>
+    <p>
+      <a href="index.html">Guide</a> &nbsp;&middot;&nbsp;
+      <a href="hooks.html">Hooks</a> &nbsp;&middot;&nbsp;
+      <a href="seeds.html">Seeds</a> &nbsp;&middot;&nbsp;
+      <a href="patterns.html">Patterns</a> &nbsp;&middot;&nbsp;
+      <a href="templates.html">Templates</a>
+    </p>
+    <p style="margin-top:0.75rem;">Orchestration Guide &mdash; TresPies &middot; DojoGenesis</p>
+  </footer>
+
+</main>
+
+<script>
+  function copyCode(btn) {
+    const pre = btn.nextElementSibling;
+    const text = pre ? pre.textContent : '';
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'copy';
+        btn.classList.remove('copied');
+      }, 1800);
+    }).catch(() => {
+      btn.textContent = 'error';
+      setTimeout(() => { btn.textContent = 'copy'; }, 1800);
+    });
+  }
+
+  // Print: expand all details
+  window.addEventListener('beforeprint', () => {
+    document.querySelectorAll('details').forEach(d => d.setAttribute('open', ''));
+  });
+</script>
+
+</body>
+</html>

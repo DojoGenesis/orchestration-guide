@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Seed Library — Orchestration Guide</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    /* ── CSS custom properties ── */
+    :root {
+      --bg:           #0d1117;
+      --bg-secondary: #161b22;
+      --bg-tertiary:  #21262d;
+      --border:       #30363d;
+      --text:         #c9d1d9;
+      --text-muted:   #8b949e;
+      --text-subtle:  #6e7681;
+      --accent:       #58a6ff;
+      --accent-dim:   #1f6feb;
+      --success:      #238636;
+      --success-text: #3fb950;
+      --warning:      #da3633;
+      --warning-text: #f85149;
+      --warn-soft:    #e3b341;
+      --purple:       #bc8cff;
+      --teal:         #39d353;
+      --font-mono:    'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+      --radius:       6px;
+    }
+
+    /* ── Reset & base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; font-size: 15px; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-mono);
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    /* ── Top nav bar ── */
+    .topnav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0;
+      padding: 0 2rem;
+      height: 48px;
+    }
+
+    .topnav-brand {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-subtle);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      text-decoration: none;
+      padding-right: 1.5rem;
+      border-right: 1px solid var(--border);
+      margin-right: 1rem;
+      white-space: nowrap;
+    }
+
+    .topnav-brand:hover { color: var(--accent); }
+
+    .topnav-links {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      flex: 1;
+      overflow-x: auto;
+    }
+
+    .topnav-links a {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      padding: 0.3rem 0.75rem;
+      border-radius: var(--radius);
+      white-space: nowrap;
+      transition: color 0.15s, background 0.15s;
+    }
+
+    .topnav-links a:hover { color: var(--accent); background: rgba(88,166,255,0.08); }
+    .topnav-links a.active { color: var(--accent); background: rgba(88,166,255,0.12); }
+
+    /* ── Page layout ── */
+    .page {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 3rem 2rem 5rem;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 2.5rem 0 2.5rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 2.5rem;
+    }
+
+    .hero-eyebrow {
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+    }
+
+    .hero h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      line-height: 1.2;
+      color: #e6edf3;
+      margin-bottom: 0.6rem;
+      letter-spacing: -0.02em;
+    }
+
+    .hero .subtitle {
+      font-size: 1rem;
+      color: var(--text-muted);
+      font-weight: 300;
+      margin-bottom: 1.25rem;
+      max-width: 700px;
+    }
+
+    .hero-stats {
+      display: flex;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .stat { text-align: left; }
+
+    .stat-num {
+      display: block;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1;
+    }
+
+    .stat-label {
+      display: block;
+      font-size: 0.65rem;
+      color: var(--text-subtle);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-top: 0.2rem;
+    }
+
+    /* ── What is a Seed ── */
+    .seed-explainer {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 2.5rem;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+
+    .seed-explainer strong { color: var(--text); }
+
+    .seed-format {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+      font-size: 0.78rem;
+      color: var(--text-subtle);
+    }
+
+    .seed-format code {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 0.1rem 0.4rem;
+      color: var(--warn-soft);
+      font-size: 0.76rem;
+    }
+
+    /* ── Controls ── */
+    .controls {
+      margin-bottom: 1.75rem;
+    }
+
+    .search-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .search-input {
+      flex: 1;
+      max-width: 420px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      padding: 0.5rem 0.85rem;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .search-input::placeholder { color: var(--text-subtle); }
+    .search-input:focus { border-color: var(--accent); }
+
+    .count-badge {
+      font-size: 0.72rem;
+      color: var(--text-subtle);
+      white-space: nowrap;
+    }
+
+    .count-badge span { color: var(--accent); font-weight: 600; }
+
+    .filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+
+    .filter-btn {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      padding: 0.3rem 0.85rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    .filter-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(88,166,255,0.07);
+    }
+
+    .filter-btn.active {
+      background: var(--accent-dim);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .filter-btn .btn-count {
+      display: inline-block;
+      background: rgba(255,255,255,0.12);
+      border-radius: 10px;
+      padding: 0 0.35rem;
+      margin-left: 0.3rem;
+      font-size: 0.66rem;
+    }
+
+    .filter-btn.active .btn-count {
+      background: rgba(255,255,255,0.2);
+    }
+
+    /* ── Seed grid ── */
+    .seed-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+
+    @media (max-width: 720px) {
+      .seed-grid { grid-template-columns: 1fr; }
+      .topnav { padding: 0 1rem; }
+      .page { padding: 2rem 1rem 4rem; }
+    }
+
+    .seed-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.1rem;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+
+    .seed-card:hover {
+      border-color: rgba(88,166,255,0.35);
+      box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+    }
+
+    .seed-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
+    .seed-name {
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: #e6edf3;
+      line-height: 1.3;
+    }
+
+    .seed-type-badge {
+      font-size: 0.63rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 10px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .type-seed    { background: rgba(57,211,83,0.12);  color: var(--teal);       border: 1px solid rgba(57,211,83,0.25); }
+    .type-feedback{ background: rgba(88,166,255,0.12); color: var(--accent);     border: 1px solid rgba(88,166,255,0.25); }
+    .type-reference{background: rgba(188,140,255,0.12);color: var(--purple);     border: 1px solid rgba(188,140,255,0.25);}
+    .type-project { background: rgba(227,179,65,0.12); color: var(--warn-soft);  border: 1px solid rgba(227,179,65,0.25); }
+
+    .seed-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .seed-card-footer {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-top: 0.1rem;
+    }
+
+    .cat-badge {
+      font-size: 0.65rem;
+      padding: 0.15rem 0.55rem;
+      border-radius: 10px;
+      white-space: nowrap;
+    }
+
+    /* Category colors */
+    .cat-agent      { background: rgba(88,166,255,0.1);  color: #79c0ff; border: 1px solid rgba(88,166,255,0.2); }
+    .cat-arch       { background: rgba(57,211,83,0.1);   color: #56d364; border: 1px solid rgba(57,211,83,0.2);  }
+    .cat-deploy     { background: rgba(188,140,255,0.1); color: #d2a8ff; border: 1px solid rgba(188,140,255,0.2); }
+    .cat-data       { background: rgba(227,179,65,0.1);  color: #e3b341; border: 1px solid rgba(227,179,65,0.2); }
+    .cat-strategy   { background: rgba(248,81,73,0.1);   color: #ff7b72; border: 1px solid rgba(248,81,73,0.2);  }
+    .cat-tooling    { background: rgba(63,185,80,0.1);   color: #3fb950; border: 1px solid rgba(63,185,80,0.2);  }
+    .cat-ecosystem  { background: rgba(240,136,62,0.1);  color: #ffa657; border: 1px solid rgba(240,136,62,0.2); }
+    .cat-reference  { background: rgba(188,140,255,0.1); color: #bc8cff; border: 1px solid rgba(188,140,255,0.2);}
+    .cat-debug      { background: rgba(139,148,158,0.1); color: #8b949e; border: 1px solid rgba(139,148,158,0.2);}
+
+    /* ── Empty state ── */
+    .empty-state {
+      display: none;
+      text-align: center;
+      padding: 4rem 2rem;
+      color: var(--text-subtle);
+    }
+
+    .empty-state.visible { display: block; }
+
+    .empty-icon {
+      font-size: 2.5rem;
+      margin-bottom: 0.75rem;
+      opacity: 0.4;
+    }
+
+    .empty-state p { font-size: 0.85rem; }
+
+    /* ── Section dividers ── */
+    .section-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-subtle);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.5rem;
+      margin-bottom: 1rem;
+      margin-top: 2rem;
+    }
+
+    /* ── Print ── */
+    @media print {
+      .topnav { display: none; }
+      .controls { display: none; }
+      body { background: white; color: #111; }
+      .seed-card { border: 1px solid #ccc; break-inside: avoid; }
+      .seed-name { color: #111; }
+      .seed-desc { color: #444; }
+      .seed-grid { grid-template-columns: repeat(2, 1fr); }
+      .seed-card { display: flex !important; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Top navigation bar -->
+<nav class="topnav">
+  <a href="index.html" class="topnav-brand">Orchestration Guide</a>
+  <div class="topnav-links">
+    <a href="index.html">Guide</a>
+    <a href="seeds.html" class="active">Seed Library</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- Hero -->
+  <header class="hero">
+    <div class="hero-eyebrow">Pattern Reference</div>
+    <h1>Seed Library</h1>
+    <p class="subtitle">Validated patterns extracted from real friction — 95 seeds across 9 categories. Find the right seed for your situation, not from documentation, but from hard-won operational experience.</p>
+    <div class="hero-stats">
+      <div class="stat">
+        <span class="stat-num" id="total-count">95</span>
+        <span class="stat-label">Total Seeds</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num">9</span>
+        <span class="stat-label">Categories</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num">0</span>
+        <span class="stat-label">Problems to re-debug</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- What is a Seed -->
+  <div class="seed-explainer">
+    <strong>What is a seed?</strong> A seed is a reusable pattern extracted from real friction. When debugging produces a non-obvious insight, you capture the diagnostic shape — what the symptom was, what the root cause was, what would find it faster next time. Seeds compound: 95 seeds means 95 problems you'll never debug from scratch again.
+    <div class="seed-format">
+      Format:
+      <code>name</code>
+      <code>description</code>
+      <code>type</code>
+      body: pattern + Why + How to apply + Evidence + Diagnostic
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <div class="search-row">
+      <input
+        type="search"
+        class="search-input"
+        id="search-input"
+        placeholder="Search seeds by name or description..."
+        aria-label="Search seeds"
+        autocomplete="off"
+      >
+      <div class="count-badge"><span id="visible-count">95</span> of 95 seeds</div>
+    </div>
+    <div class="filter-row" id="filter-row">
+      <!-- Buttons injected by JS -->
+    </div>
+  </div>
+
+  <!-- Empty state -->
+  <div class="empty-state" id="empty-state">
+    <div class="empty-icon">//</div>
+    <p>No seeds match your search. Try a different term or clear the filter.</p>
+  </div>
+
+  <!-- Seed grid -->
+  <div class="seed-grid" id="seed-grid">
+    <!-- Cards injected by JS -->
+  </div>
+
+</div>
+
+<script>
+/* ── Seed data ── */
+const SEEDS = [
+  /* ── Agent Delegation ── */
+  {
+    id: "agent_false_completion",
+    name: "Agent False Completion",
+    cat: "agent",
+    catLabel: "Agent Delegation",
+    type: "seed",
+    desc: "Agents report complete without persisting writes; verify with git status + grep after every agent completes."
+  },
+  {
+    id: "agent_swarm_parallel_delegation",
+    name: "Agent Swarm Parallel Delegation",
+    cat: "agent",
+    catLabel: "Agent Delegation",
+    type: "seed",
+    desc: "Architect complex track directly on main thread; delegate simpler tracks to parallel Sonnet agents."
+  },
+  {
+    id: "aspirational_vs_mechanical",
+    name: "Aspirational vs Mechanical",
+    cat: "agent",
+    catLabel: "Agent Delegation",
+    type: "seed",
+    desc: "Policies without hooks drift to 0% compliance; every rule needs a mechanical enforcement layer."
+  },
+  {
+    id: "background_agent_parallelism",
+    name: "Background Agent Parallelism",
+    cat: "agent",
+    catLabel: "Agent Delegation",
+    type: "seed",
+    desc: "Long ops run as background agents; short ops as foreground. Prevents main thread blocking."
+  },
+  {
+    id: "compilation_as_contract_agent",
+    name: "Compilation as Contract",
+    cat: "agent",
+    catLabel: "Agent Delegation",
+    type: "seed",
+    desc: "go build / cargo check as the acceptance gate for parallel agent work before integration."
+  },
+  {
+    id: "convergence_gate",
+    name: "Convergence Gate",
+    cat: "agent",
+    catLabel: "Agent Delegation",
+    type: "seed",
+    desc: "After 3-4 Sonnet sessions, commit/test/triage/evaluate trajectory. YELLOW at 10+ dirty files."
+  },
+  {
+    id: "dry_run_as_founding_gate",
+    name: "Dry-Run as Founding Gate",
+    cat: "agent",
+    catLabel: "Agent Delegation",
+    type: "seed",
+    desc: "First run of any new script must be --dry-run. Caught a bash 3 crash before corrupting 33 files."
+  },
+  {
+    id: "parallel_agent_scaling",
+    name: "Parallel Agent Scaling",
+    cat: "agent",
+    catLabel: "Agent Delegation",
+    type: "seed",
+    desc: "3 concurrent agents = sweet spot for 3x speedup. Main thread handles strategy; agents handle heavy lifting."
+  },
+  {
+    id: "posttooluse_hook_behavior",
+    name: "PostToolUse Hook Cannot Block",
+    cat: "agent",
+    catLabel: "Agent Delegation",
+    type: "seed",
+    desc: "PostToolUse fires after write; exit 2 has no blocking effect. Use PreToolUse to prevent bad writes."
+  },
+  {
+    id: "validation_hook_as_regression_gate",
+    name: "Validation Hook as Regression Gate",
+    cat: "agent",
+    catLabel: "Agent Delegation",
+    type: "seed",
+    desc: "After a fleet-wide fix lands, add a PostToolUse hook immediately to prevent the same regression."
+  },
+  {
+    id: "zero_overlap_agent_swarm",
+    name: "Zero-Overlap Agent Swarm",
+    cat: "agent",
+    catLabel: "Agent Delegation",
+    type: "seed",
+    desc: "Explicit file manifests per agent; 20+ parallel agents with zero merge conflicts. Main thread does strategy + integration only."
+  },
+  {
+    id: "orchestrator_blindspot_parallel_filesystem",
+    name: "Orchestrator Blindspot: Parallel Filesystem",
+    cat: "agent",
+    catLabel: "Agent Delegation",
+    type: "seed",
+    desc: "Multi-session orchestration risk: agents writing to the same shared filesystem can silently clobber each other."
+  },
+
+  /* ── Architecture & Engineering ── */
+  {
+    id: "501_as_honest_boundary",
+    name: "501 as Honest Boundary",
+    cat: "arch",
+    catLabel: "Architecture & Engineering",
+    type: "seed",
+    desc: "Return HTTP 501 for unimplemented interface methods; makes gaps visible and traceable, not silent."
+  },
+  {
+    id: "bounded_fanout_log_watcher",
+    name: "Bounded Fanout Log Watcher",
+    cat: "arch",
+    catLabel: "Architecture & Engineering",
+    type: "seed",
+    desc: "Multi-file tail, multiple subscribers, silent drop on slow clients, context-driven lifecycle. Zero-dependency Go."
+  },
+  {
+    id: "context_injection_tool_config",
+    name: "Context Injection Tool Config",
+    cat: "arch",
+    catLabel: "Architecture & Engineering",
+    type: "seed",
+    desc: "Use context.Context value injection to thread per-request config into nested tool functions; goroutine-safe."
+  },
+  {
+    id: "cross_process_cwd_mismatch",
+    name: "Cross-Process CWD Mismatch",
+    cat: "arch",
+    catLabel: "Architecture & Engineering",
+    type: "seed",
+    desc: "filepath.Abs() in a server resolves to the server's CWD; fix by sending workspace_root with every CLI request."
+  },
+  {
+    id: "engagement_engine",
+    name: "Pure-Logic Engagement Engine",
+    cat: "arch",
+    catLabel: "Architecture & Engineering",
+    type: "seed",
+    desc: "Isolate XP/belt/achievement/streak logic as a zero-dependency package. Track A (tests) before Track B (integration)."
+  },
+  {
+    id: "era_architecture_validation",
+    name: "Era Architecture Validation",
+    cat: "arch",
+    catLabel: "Architecture & Engineering",
+    type: "seed",
+    desc: "Multi-era dev model: research → implement → verify → next era. Gate each era before advancing."
+  },
+  {
+    id: "frontend_from_backend_at_scale",
+    name: "Frontend from Backend at Scale",
+    cat: "arch",
+    catLabel: "Architecture & Engineering",
+    type: "seed",
+    desc: "Derive TypeScript types from Go/Rust structs, not from documentation. Verify endpoint counts against spec."
+  },
+  {
+    id: "gap_audit_then_fix",
+    name: "Gap Audit Then Fix",
+    cat: "arch",
+    catLabel: "Architecture & Engineering",
+    type: "seed",
+    desc: "Spec → Audit → Classify → Fix pipeline. Found 12 hidden gaps including a security issue via this sequence."
+  },
+  {
+    id: "goroutine_injection_nil_trap",
+    name: "Goroutine Injection Nil Trap",
+    cat: "arch",
+    catLabel: "Architecture & Engineering",
+    type: "seed",
+    desc: "Goroutine startup doesn't populate struct fields populated by the constructor. Check injection timing."
+  },
+  {
+    id: "inline_handler_test_node",
+    name: "Inline Handler Test Node",
+    cat: "arch",
+    catLabel: "Architecture & Engineering",
+    type: "seed",
+    desc: "Wrap domain object in inline ServeMux for HTTP integration tests; avoids constructing full Server with unexported deps."
+  },
+  {
+    id: "raf_batching_reactive_hang",
+    name: "rAF Batching for SSE Streams",
+    cat: "arch",
+    catLabel: "Architecture & Engineering",
+    type: "seed",
+    desc: "SSE-driven reactive stores hang the UI when updated per chunk; batch at frame rate using requestAnimationFrame."
+  },
+  {
+    id: "typed_sse_consumer",
+    name: "Typed SSE Consumer",
+    cat: "arch",
+    catLabel: "Architecture & Engineering",
+    type: "seed",
+    desc: "EventType enum + ClassifyChunk() separates parsing from display. Classify-then-render pattern for SSE streams."
+  },
+  {
+    id: "wails_module_colocation",
+    name: "Wails Module Co-location",
+    cat: "arch",
+    catLabel: "Architecture & Engineering",
+    type: "seed",
+    desc: "Wails app as subdirectory of parent module grants access to internal/ packages; no separate go.mod needed."
+  },
+  {
+    id: "wails_sse_event_bridge",
+    name: "Wails SSE Event Bridge",
+    cat: "arch",
+    catLabel: "Architecture & Engineering",
+    type: "seed",
+    desc: "EventsEmit (Go) + EventsOn + rAF batching (Svelte 5) for streaming content in Wails desktop apps."
+  },
+
+  /* ── Deployment & Release ── */
+  {
+    id: "dual_remote_trespies_mirror",
+    name: "Dual-Remote Mirror Pattern",
+    cat: "deploy",
+    catLabel: "Deployment & Release",
+    type: "seed",
+    desc: "Push to both remotes via git push; never use gh repo sync (not forks). Full remote map before any op."
+  },
+  {
+    id: "gh_release_cross_org_flag",
+    name: "gh Release Cross-Org Flag",
+    cat: "deploy",
+    catLabel: "Deployment & Release",
+    type: "seed",
+    desc: "Use --repo flag when auth user differs from target org; prevents silent publish to wrong account."
+  },
+  {
+    id: "goreleaser_ldflags_trap",
+    name: "GoReleaser ldflags Trap",
+    cat: "deploy",
+    catLabel: "Deployment & Release",
+    type: "seed",
+    desc: "const can't be overridden at link time; use var + full package path for version injection via ldflags."
+  },
+  {
+    id: "goreleaser_tarball_url_format",
+    name: "GoReleaser Tarball URL Format",
+    cat: "deploy",
+    catLabel: "Deployment & Release",
+    type: "seed",
+    desc: "Binary name comes from .goreleaser.yaml, not the repo name. Verify before scripting download URLs."
+  },
+  {
+    id: "legacy_readme_safe_update",
+    name: "Legacy README Safe Update",
+    cat: "deploy",
+    catLabel: "Deployment & Release",
+    type: "seed",
+    desc: "READMEs over 20KB: update the header block only; never rewrite the full file in one agent pass."
+  },
+  {
+    id: "release_version_check",
+    name: "Release Version Check",
+    cat: "deploy",
+    catLabel: "Deployment & Release",
+    type: "seed",
+    desc: "Always run gh release list before gh release create; prevents duplicate tags and version collisions."
+  },
+  {
+    id: "repo_rename_cascade",
+    name: "Repo Rename Cascade",
+    cat: "deploy",
+    catLabel: "Deployment & Release",
+    type: "seed",
+    desc: "3-layer rename: directory name → GitHub remote URL → Go module path. Audit gate before each layer."
+  },
+  {
+    id: "vps_deploy_404_triage",
+    name: "VPS Deploy 404 Triage",
+    cat: "deploy",
+    catLabel: "Deployment & Release",
+    type: "seed",
+    desc: "Three distinct failure modes: server unreachable, server unhealthy, and partial 404. Diagnose before patching."
+  },
+
+  /* ── Data Engineering ── */
+  {
+    id: "gov_api_batch_silence",
+    name: "Government API Batch Silence",
+    cat: "data",
+    catLabel: "Data Engineering",
+    type: "seed",
+    desc: "Batch government APIs silently drop data on certain param combos. Run single-series diagnostic first."
+  },
+  {
+    id: "open_data_url_volatility",
+    name: "Open Data URL Volatility",
+    cat: "data",
+    catLabel: "Data Engineering",
+    type: "seed",
+    desc: "Government URLs, columns, and formats change every data vintage. Use fallback URL lists and column alias dicts."
+  },
+  {
+    id: "pipeline_variable_cascade",
+    name: "Pipeline Variable Cascade",
+    cat: "data",
+    catLabel: "Data Engineering",
+    type: "seed",
+    desc: "pipeline.json + Make sentinel files for automated rebuild cascades; variable change triggers full DAG rebuild."
+  },
+  {
+    id: "raw_data_first_architecture",
+    name: "Raw Data First Architecture",
+    cat: "data",
+    catLabel: "Data Engineering",
+    type: "seed",
+    desc: "Store raw indicators as the foundation layer; compute composites at query time rather than at ingestion time."
+  },
+
+  /* ── Strategy & Product ── */
+  {
+    id: "contradiction_detection_planning",
+    name: "Contradiction Detection",
+    cat: "strategy",
+    catLabel: "Strategy & Product",
+    type: "seed",
+    desc: "Cross-reference all planning docs to find disagreements; each contradiction is an overdue strategic decision."
+  },
+  {
+    id: "design_jam_as_strategy",
+    name: "Design Jam as Strategy",
+    cat: "strategy",
+    catLabel: "Strategy & Product",
+    type: "seed",
+    desc: "Keep recycling ideas through parallel design agents before committing to direction. Diverge before converging."
+  },
+  {
+    id: "document_centric_studio",
+    name: "Document-Centric Studio",
+    cat: "strategy",
+    catLabel: "Strategy & Product",
+    type: "seed",
+    desc: "Artifact is the product; everything orbits the open document. Use inspector pattern for properties."
+  },
+  {
+    id: "era_architecture_in_practice",
+    name: "Era Architecture in Practice",
+    cat: "strategy",
+    catLabel: "Strategy & Product",
+    type: "seed",
+    desc: "Scout facets not releases. 3 parallel scouts converged independently on document-centric model."
+  },
+  {
+    id: "infrastructure_not_publication",
+    name: "Infrastructure, Not Publication",
+    cat: "strategy",
+    catLabel: "Strategy & Product",
+    type: "seed",
+    desc: "Build tools that keep you in the room, not standalone docs that get filed and never referenced."
+  },
+  {
+    id: "insights_driven_architecture",
+    name: "Insights-Driven Architecture",
+    cat: "strategy",
+    catLabel: "Strategy & Product",
+    type: "seed",
+    desc: "Usage analytics as requirements: 7 architecture decisions derived from 117 sessions of observed behavior."
+  },
+  {
+    id: "kill_ship_archive_triage",
+    name: "Kill-Ship-Archive Triage",
+    cat: "strategy",
+    catLabel: "Strategy & Product",
+    type: "seed",
+    desc: "Use commit count + dormancy + test coverage as decision heuristic for Kill / Ship / Archive on each project."
+  },
+  {
+    id: "microservice_brain_pattern",
+    name: "Microservice Brain Pattern",
+    cat: "strategy",
+    catLabel: "Strategy & Product",
+    type: "seed",
+    desc: "Focused services + thin orchestrator. Section parsing native in Go, not via MCP. Brain owns routing only."
+  },
+  {
+    id: "preference_not_gate",
+    name: "Preference, Not Gate",
+    cat: "strategy",
+    catLabel: "Strategy & Product",
+    type: "seed",
+    desc: "Conventions should yield to context; hard rules cause worse errors than the ones they were designed to prevent."
+  },
+  {
+    id: "product_rename_transformation",
+    name: "Product Rename Transformation",
+    cat: "strategy",
+    catLabel: "Strategy & Product",
+    type: "seed",
+    desc: "Rename and deepen simultaneously; don't rename then improve separately. YABIR → Madison Equity Atlas pattern."
+  },
+  {
+    id: "solo_operator_focus_theorem",
+    name: "Solo Operator Focus Theorem",
+    cat: "strategy",
+    catLabel: "Strategy & Product",
+    type: "seed",
+    desc: "When margins > 80% and headcount = 1, attention is the only scarce resource. Optimize for attention, not revenue."
+  },
+  {
+    id: "strategic_to_tactical_april2026",
+    name: "Strategic-to-Tactical Workflow",
+    cat: "strategy",
+    catLabel: "Strategy & Product",
+    type: "seed",
+    desc: "Full 8-phase workflow: portfolio reset from tension to reflection. Proven across 121 sessions."
+  },
+  {
+    id: "wedge_strategy",
+    name: "Wedge Strategy",
+    cat: "strategy",
+    catLabel: "Strategy & Product",
+    type: "seed",
+    desc: "Ship smallest change for biggest usability lift before structural refactor. Proves direction cheaply."
+  },
+  {
+    id: "wider_than_deep_diagnostic",
+    name: "Wider-Than-Deep Diagnostic",
+    cat: "strategy",
+    catLabel: "Strategy & Product",
+    type: "seed",
+    desc: "5-signal diagnostic for portfolio breadth exceeding execution depth. Run before allocating new attention."
+  },
+  {
+    id: "grant_constraint_strategy_clarifier",
+    name: "Grant Constraint as Clarifier",
+    cat: "strategy",
+    catLabel: "Strategy & Product",
+    type: "seed",
+    desc: "Hard grant rules force strategic decisions that deliberation alone cannot produce; constraint IS the strategy session."
+  },
+
+  /* ── Claude Code & Tooling ── */
+  {
+    id: "claude_code_meta_patterns",
+    name: "Claude Code Meta Patterns",
+    cat: "tooling",
+    catLabel: "Claude Code & Tooling",
+    type: "reference",
+    desc: "Token hygiene (50-75% reduction), sub-agent model routing, parallel MCP startup patterns for Claude Code."
+  },
+  {
+    id: "correction_driven_learning",
+    name: "Correction-Driven Learning",
+    cat: "tooling",
+    catLabel: "Claude Code & Tooling",
+    type: "feedback",
+    desc: "Dual-layer correction capture: in-session update + persistent seed for cross-session retention."
+  },
+  {
+    id: "hooks_lifecycle_mastery",
+    name: "Hooks Lifecycle Mastery",
+    cat: "tooling",
+    catLabel: "Claude Code & Tooling",
+    type: "seed",
+    desc: "13 Claude Code hook events, exit code 2 blocking behavior, sub-agent orchestration via hook chains."
+  },
+  {
+    id: "mechanical_safety_enforcement",
+    name: "Mechanical Safety Enforcement",
+    cat: "tooling",
+    catLabel: "Claude Code & Tooling",
+    type: "seed",
+    desc: "Dual-layer safety architecture: instructional layer + mechanical hook layer. Neither alone is sufficient."
+  },
+  {
+    id: "multi_agent_observability",
+    name: "Multi-Agent Observability",
+    cat: "tooling",
+    catLabel: "Claude Code & Tooling",
+    type: "seed",
+    desc: "12 hook events → SQLite (WAL mode) → WebSocket dashboard. Full agent fleet visibility without log files."
+  },
+  {
+    id: "session_lifecycle_three_loops",
+    name: "Session Lifecycle Three Loops",
+    cat: "tooling",
+    catLabel: "Claude Code & Tooling",
+    type: "seed",
+    desc: "Session bookends + background maintenance + delegation flywheel. Addresses 44% zero-line session leak."
+  },
+  {
+    id: "erotetic_termination",
+    name: "Erotetic Termination",
+    cat: "tooling",
+    catLabel: "Claude Code & Tooling",
+    type: "seed",
+    desc: "Task is done when no open questions remain. Question-driven completion check, not time-based."
+  },
+
+  /* ── Ecosystem & Supply Chain ── */
+  {
+    id: "audit_before_sync",
+    name: "Audit Before Sync",
+    cat: "ecosystem",
+    catLabel: "Ecosystem & Supply Chain",
+    type: "seed",
+    desc: "Diff-report before automating any distribution sync. Target may be richer than canonical source."
+  },
+  {
+    id: "audit_driven_sweep_dispatch",
+    name: "Audit-Driven Sweep Dispatch",
+    cat: "ecosystem",
+    catLabel: "Ecosystem & Supply Chain",
+    type: "seed",
+    desc: "Sort audit findings by effort tier (trivial→main, substantial→agents); group by file independence."
+  },
+  {
+    id: "bundled_asset_skills",
+    name: "Bundled Asset Skills",
+    cat: "ecosystem",
+    catLabel: "Ecosystem & Supply Chain",
+    type: "seed",
+    desc: "Embed fonts, schemas, SVG, scripts inside skill directories for offline-capable self-contained skills."
+  },
+  {
+    id: "cas_first_distribution",
+    name: "CAS-First Distribution",
+    cat: "ecosystem",
+    catLabel: "Ecosystem & Supply Chain",
+    type: "seed",
+    desc: "All skill operations target CAS; never modify source repos directly. CAS is the single source of truth."
+  },
+  {
+    id: "dojo_cas_path_targeting",
+    name: "DOJO_CAS_PATH Targeting",
+    cat: "ecosystem",
+    catLabel: "Ecosystem & Supply Chain",
+    type: "seed",
+    desc: "Use DOJO_CAS_PATH env var to point the dojo binary at the correct Gateway CAS database."
+  },
+  {
+    id: "founding_ritual_pattern",
+    name: "Founding Ritual for Pipelines",
+    cat: "ecosystem",
+    catLabel: "Ecosystem & Supply Chain",
+    type: "seed",
+    desc: "First run of any sync/distribution pipeline: human reviews every diverged item. Cannot be automated or deferred."
+  },
+  {
+    id: "multi_platform_skill_conversion",
+    name: "Multi-Platform Skill Conversion",
+    cat: "ecosystem",
+    catLabel: "Ecosystem & Supply Chain",
+    type: "seed",
+    desc: "Single SKILL.md source → convert.sh → 11 platform targets. One canonical, many distributions."
+  },
+  {
+    id: "scout_before_star",
+    name: "Scout Before Star",
+    cat: "ecosystem",
+    catLabel: "Ecosystem & Supply Chain",
+    type: "seed",
+    desc: "Curate external resources only after confirming strategic alignment; ad-hoc starring creates noise."
+  },
+  {
+    id: "security_first_skill_ingestion",
+    name: "Security-First Skill Ingestion",
+    cat: "ecosystem",
+    catLabel: "Ecosystem & Supply Chain",
+    type: "seed",
+    desc: "Audit gate before normalize: injection, exfiltration, and supply-chain scanning for every community skill."
+  },
+  {
+    id: "seeds_to_oss_pipeline",
+    name: "Seeds to OSS Pipeline",
+    cat: "ecosystem",
+    catLabel: "Ecosystem & Supply Chain",
+    type: "seed",
+    desc: "Seeds with workarounds become ready issues; extracted packages from internal code become OSS contributions."
+  },
+  {
+    id: "tiered_skill_authority",
+    name: "Tiered Skill Authority",
+    cat: "ecosystem",
+    catLabel: "Ecosystem & Supply Chain",
+    type: "seed",
+    desc: "Tier 1 (canonical) > Tier 2 (distribution) > Tier 3 (community). Explicit authority prevents governance drift."
+  },
+
+  /* ── Reference & Patterns ── */
+  {
+    id: "12_orchestration_patterns",
+    name: "12 Orchestration Patterns",
+    cat: "reference",
+    catLabel: "Reference & Patterns",
+    type: "reference",
+    desc: "Full catalog of 12 multi-agent orchestration patterns with meta-selector for choosing the right one."
+  },
+  {
+    id: "async_sandbox_dispatch",
+    name: "Async Sandbox Dispatch",
+    cat: "reference",
+    catLabel: "Reference & Patterns",
+    type: "seed",
+    desc: "Control plane / data plane separation with session interface abstraction for async agent sandboxes."
+  },
+  {
+    id: "continuity_ledger_system",
+    name: "Continuity Ledger System",
+    cat: "reference",
+    catLabel: "Reference & Patterns",
+    type: "seed",
+    desc: "Markdown ledger files for within-session state. Create → update → archive lifecycle."
+  },
+  {
+    id: "dojo_ada_disposition_presets",
+    name: "Dojo ADA Disposition Presets",
+    cat: "reference",
+    catLabel: "Reference & Patterns",
+    type: "reference",
+    desc: "4 named agent archetypes + 10-tool behavioral matrix. Preset system for agent personality configuration."
+  },
+  {
+    id: "disposition_from_prompts",
+    name: "Disposition from Prompts",
+    cat: "reference",
+    catLabel: "Reference & Patterns",
+    type: "seed",
+    desc: "Reverse-engineer system prompts into ADA disposition presets. Extract reusable archetype from observed behavior."
+  },
+  {
+    id: "environment_setup_patterns",
+    name: "Environment Setup Patterns",
+    cat: "reference",
+    catLabel: "Reference & Patterns",
+    type: "seed",
+    desc: "Manifest-as-SSOT and memory bank decomposition patterns for reproducible environment configuration."
+  },
+  {
+    id: "generative_ui_spectrum",
+    name: "Generative UI Spectrum",
+    cat: "reference",
+    catLabel: "Reference & Patterns",
+    type: "seed",
+    desc: "4-approach taxonomy: controlled (pre-built components) to open (raw HTML). Framework for choosing approach."
+  },
+  {
+    id: "mcp_ecosystem_patterns",
+    name: "MCP Ecosystem Patterns",
+    cat: "reference",
+    catLabel: "Reference & Patterns",
+    type: "seed",
+    desc: "MCP 3 primitives, llms.txt standard, GitMCP instant docs via gitmcp.io/{owner}/{repo}."
+  },
+  {
+    id: "multi_agent_infrastructure",
+    name: "Multi-Agent Infrastructure",
+    cat: "reference",
+    catLabel: "Reference & Patterns",
+    type: "seed",
+    desc: "CodeRAG, mid-session model switching, LSP, named sessions, multiplayer attribution patterns."
+  },
+  {
+    id: "orchestration_pattern_catalog",
+    name: "Orchestration Pattern Catalog",
+    cat: "reference",
+    catLabel: "Reference & Patterns",
+    type: "reference",
+    desc: "12 orchestration patterns with config examples, failure modes, and DAG template mappings."
+  },
+  {
+    id: "persona_skill_loadouts",
+    name: "Persona Skill Loadouts",
+    cat: "reference",
+    catLabel: "Reference & Patterns",
+    type: "reference",
+    desc: "15-30 skill loadouts per archetype: Solo Founder, Startup CTO, Growth Marketer. ADA disposition mapping."
+  },
+  {
+    id: "self_contained_html_kit",
+    name: "Self-Contained HTML Kit",
+    cat: "reference",
+    catLabel: "Reference & Patterns",
+    type: "seed",
+    desc: "Production apps as single .html files using Alpine.js + localStorage. No server required."
+  },
+  {
+    id: "yaml_handoff_protocol",
+    name: "YAML Handoff Protocol",
+    cat: "reference",
+    catLabel: "Reference & Patterns",
+    type: "seed",
+    desc: "YAML frontmatter handoff format for inter-session knowledge transfer between agent sessions."
+  },
+  {
+    id: "research_to_architecture_pipeline",
+    name: "Research-to-Architecture Pipeline",
+    cat: "reference",
+    catLabel: "Reference & Patterns",
+    type: "seed",
+    desc: "18 research documents produced 20 ADRs in 10 days. Structured pipeline from research to architecture decisions."
+  },
+
+  /* ── Debugging & Workflow ── */
+  {
+    id: "cli_as_key_registry",
+    name: "CLI as Key Registry",
+    cat: "debug",
+    catLabel: "Debugging & Workflow",
+    type: "seed",
+    desc: "CLI pushes API keys to gateway on startup; gateway hot-registers providers on receipt."
+  },
+  {
+    id: "config_before_code",
+    name: "Config Before Code",
+    cat: "debug",
+    catLabel: "Debugging & Workflow",
+    type: "feedback",
+    desc: "Check settings.json, .env, wrangler.toml for stale URLs before debugging code. 3+ sessions burned on this."
+  },
+  {
+    id: "fix_gaps_in_cycle",
+    name: "Fix Gaps In Cycle",
+    cat: "debug",
+    catLabel: "Debugging & Workflow",
+    type: "seed",
+    desc: "Never defer gaps that block current deliverables. Address blocking issues in the same work cycle."
+  },
+  {
+    id: "intent_classifier_bypass",
+    name: "Intent Classifier Bypass",
+    cat: "debug",
+    catLabel: "Debugging & Workflow",
+    type: "seed",
+    desc: "Explicit provider/model selection always wins over content-based routing; intent classifier is fallback only."
+  },
+  {
+    id: "plugin_lifecycle_workarounds",
+    name: "Plugin Lifecycle Workarounds",
+    cat: "debug",
+    catLabel: "Debugging & Workflow",
+    type: "seed",
+    desc: "Manual workarounds for 3 Claude Code marketplace bugs: empty clones, stale cache, broken update/delete."
+  },
+  {
+    id: "sveltekit_ssr_wails",
+    name: "SvelteKit SSR in Wails",
+    cat: "debug",
+    catLabel: "Debugging & Workflow",
+    type: "seed",
+    desc: "Always set ssr=false in +layout.ts; SSR pass crashes on window in Wails runtime bindings."
+  },
+  {
+    id: "two_handler_trap",
+    name: "Two-Handler Trap",
+    cat: "debug",
+    catLabel: "Debugging & Workflow",
+    type: "seed",
+    desc: "Audit ALL handler files before fixing routing bugs; AgenticGateway has two independent handler paths on different routes."
+  },
+  {
+    id: "dual_layer_mapping",
+    name: "Dual-Layer Module Mapping",
+    cat: "debug",
+    catLabel: "Debugging & Workflow",
+    type: "seed",
+    desc: "Map every external module to BOTH a Gateway extension point AND an Orchestration stack layer."
+  },
+  {
+    id: "claude_as_game_engine",
+    name: "Claude SDK as Game Engine",
+    cat: "debug",
+    catLabel: "Debugging & Workflow",
+    type: "seed",
+    desc: "In Pyramid Arcade: Claude SDK IS the engine — toolRunner for bots, stream for narration, tool use for scoring."
+  },
+  {
+    id: "institutional_transformation_arc",
+    name: "Institutional Transformation Arc",
+    cat: "debug",
+    catLabel: "Debugging & Workflow",
+    type: "seed",
+    desc: "CDO evolution arc from occasional research producer to data infrastructure provider for equity coalition."
+  }
+];
+
+/* ── Category config ── */
+const CATEGORIES = [
+  { id: "all",       label: "All",                   cls: "" },
+  { id: "agent",     label: "Agent Delegation",       cls: "cat-agent" },
+  { id: "arch",      label: "Architecture",           cls: "cat-arch" },
+  { id: "deploy",    label: "Deployment & Release",   cls: "cat-deploy" },
+  { id: "data",      label: "Data Engineering",       cls: "cat-data" },
+  { id: "strategy",  label: "Strategy & Product",     cls: "cat-strategy" },
+  { id: "tooling",   label: "Claude Code & Tooling",  cls: "cat-tooling" },
+  { id: "ecosystem", label: "Ecosystem",              cls: "cat-ecosystem" },
+  { id: "reference", label: "Reference & Patterns",   cls: "cat-reference" },
+  { id: "debug",     label: "Debugging & Workflow",   cls: "cat-debug" }
+];
+
+/* ── State ── */
+let activeCategory = "all";
+let searchQuery = "";
+
+/* ── Build category filter buttons ── */
+function buildFilters() {
+  const row = document.getElementById("filter-row");
+  CATEGORIES.forEach(cat => {
+    const count = cat.id === "all"
+      ? SEEDS.length
+      : SEEDS.filter(s => s.cat === cat.id).length;
+
+    const btn = document.createElement("button");
+    btn.className = "filter-btn" + (cat.id === "all" ? " active" : "");
+    btn.dataset.cat = cat.id;
+    btn.setAttribute("aria-pressed", cat.id === "all" ? "true" : "false");
+    btn.innerHTML = cat.label + `<span class="btn-count">${count}</span>`;
+    btn.addEventListener("click", () => {
+      activeCategory = cat.id;
+      document.querySelectorAll(".filter-btn").forEach(b => {
+        const isActive = b.dataset.cat === cat.id;
+        b.classList.toggle("active", isActive);
+        b.setAttribute("aria-pressed", isActive ? "true" : "false");
+      });
+      renderGrid();
+    });
+    row.appendChild(btn);
+  });
+}
+
+/* ── Render grid ── */
+function renderGrid() {
+  const grid = document.getElementById("seed-grid");
+  const empty = document.getElementById("empty-state");
+  const q = searchQuery.toLowerCase().trim();
+
+  const visible = SEEDS.filter(s => {
+    const matchCat = activeCategory === "all" || s.cat === activeCategory;
+    const matchQ = !q
+      || s.name.toLowerCase().includes(q)
+      || s.desc.toLowerCase().includes(q)
+      || s.catLabel.toLowerCase().includes(q);
+    return matchCat && matchQ;
+  });
+
+  document.getElementById("visible-count").textContent = visible.length;
+
+  if (visible.length === 0) {
+    grid.innerHTML = "";
+    empty.classList.add("visible");
+    return;
+  }
+  empty.classList.remove("visible");
+
+  grid.innerHTML = visible.map(s => {
+    const catCfg = CATEGORIES.find(c => c.id === s.cat) || {};
+    return `
+      <article class="seed-card" data-id="${s.id}">
+        <div class="seed-card-header">
+          <div class="seed-name">${escHtml(s.name)}</div>
+          <span class="seed-type-badge type-${s.type}">${s.type}</span>
+        </div>
+        <div class="seed-desc">${escHtml(s.desc)}</div>
+        <div class="seed-card-footer">
+          <span class="cat-badge ${catCfg.cls || ''}">${escHtml(s.catLabel)}</span>
+        </div>
+      </article>`;
+  }).join("");
+}
+
+function escHtml(str) {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+/* ── Search ── */
+document.getElementById("search-input").addEventListener("input", e => {
+  searchQuery = e.target.value;
+  renderGrid();
+});
+
+/* ── Init ── */
+buildFilters();
+renderGrid();
+</script>
+</body>
+</html>
