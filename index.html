@@ -1,0 +1,1664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orchestration Mastery: From Zero to Multi-Repo Infrastructure</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    /* ── CSS custom properties ── */
+    :root {
+      --bg:           #0d1117;
+      --bg-secondary: #161b22;
+      --bg-tertiary:  #21262d;
+      --border:       #30363d;
+      --text:         #c9d1d9;
+      --text-muted:   #8b949e;
+      --text-subtle:  #6e7681;
+      --accent:       #58a6ff;
+      --accent-dim:   #1f6feb;
+      --success:      #238636;
+      --success-text: #3fb950;
+      --warning:      #da3633;
+      --warning-text: #f85149;
+      --warn-soft:    #e3b341;
+      --purple:       #bc8cff;
+      --teal:         #39d353;
+      --font-mono:    'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+      --radius:       6px;
+      --sidebar-w:    240px;
+      --content-max:  900px;
+    }
+
+    /* ── Reset & base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html {
+      scroll-behavior: smooth;
+      font-size: 15px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-mono);
+      line-height: 1.7;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ── Layout ── */
+    nav.toc {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      width: var(--sidebar-w);
+      min-width: var(--sidebar-w);
+      overflow-y: auto;
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border);
+      padding: 1.5rem 0;
+      flex-shrink: 0;
+    }
+
+    nav.toc h2 {
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+      padding: 0 1.25rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 0.75rem;
+    }
+
+    nav.toc ol {
+      list-style: none;
+      padding: 0;
+    }
+
+    nav.toc li {
+      display: block;
+    }
+
+    nav.toc a {
+      display: block;
+      padding: 0.3rem 1.25rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.72rem;
+      transition: color 0.15s, background 0.15s;
+      border-left: 2px solid transparent;
+      line-height: 1.4;
+    }
+
+    nav.toc a:hover,
+    nav.toc a:focus {
+      color: var(--accent);
+      background: rgba(88, 166, 255, 0.06);
+      border-left-color: var(--accent);
+    }
+
+    nav.toc .toc-section {
+      margin-top: 0.5rem;
+    }
+
+    nav.toc .toc-section > a {
+      color: var(--text);
+      font-weight: 600;
+      font-size: 0.74rem;
+    }
+
+    nav.toc .toc-sub {
+      padding-left: 0.5rem;
+    }
+
+    main {
+      flex: 1;
+      min-width: 0;
+      padding: 3rem 4rem 5rem;
+      max-width: calc(var(--content-max) + 8rem);
+    }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 3.5rem 0 3rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 3rem;
+    }
+
+    .hero-eyebrow {
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1rem;
+    }
+
+    .hero h1 {
+      font-size: 2.1rem;
+      font-weight: 700;
+      line-height: 1.2;
+      color: #e6edf3;
+      margin-bottom: 0.75rem;
+      letter-spacing: -0.02em;
+    }
+
+    .hero .subtitle {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      margin-bottom: 1.25rem;
+      font-weight: 300;
+    }
+
+    .hero .byline {
+      font-size: 0.72rem;
+      color: var(--text-subtle);
+      padding: 0.5rem 0.85rem;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      display: inline-block;
+    }
+
+    .hero .stats {
+      display: flex;
+      gap: 2rem;
+      margin-top: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-num {
+      display: block;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1;
+    }
+
+    .stat-label {
+      display: block;
+      font-size: 0.65rem;
+      color: var(--text-subtle);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-top: 0.2rem;
+    }
+
+    /* ── Sections ── */
+    section {
+      margin-bottom: 3.5rem;
+    }
+
+    section > h2 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #e6edf3;
+      margin-bottom: 0.35rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    section > h2 .section-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.6rem;
+      height: 1.6rem;
+      border-radius: 50%;
+      background: var(--accent-dim);
+      color: #e6edf3;
+      font-size: 0.75rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    section > .section-desc {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      margin: 0.5rem 0 1.5rem;
+    }
+
+    h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #e6edf3;
+      margin: 1.5rem 0 0.6rem;
+    }
+
+    p {
+      color: var(--text);
+      margin-bottom: 0.85rem;
+      font-size: 0.88rem;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover { text-decoration: underline; }
+
+    /* ── Code blocks ── */
+    pre {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      overflow-x: auto;
+      margin: 0.85rem 0 1.1rem;
+      font-size: 0.78rem;
+      line-height: 1.6;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.83em;
+      background: var(--bg-tertiary);
+      padding: 0.15em 0.4em;
+      border-radius: 3px;
+      color: #e6edf3;
+    }
+
+    pre code {
+      background: none;
+      padding: 0;
+      font-size: inherit;
+      color: var(--text);
+    }
+
+    /* syntax spans */
+    .kw  { color: #ff7b72; }   /* keyword */
+    .str { color: #a5d6ff; }   /* string */
+    .cmt { color: var(--text-subtle); font-style: italic; }
+    .fn  { color: #d2a8ff; }   /* function */
+    .num { color: #79c0ff; }   /* number */
+    .op  { color: #ff7b72; }   /* operator */
+    .var { color: var(--warn-soft); } /* variable */
+    .typ { color: #ffa657; }   /* type */
+    .dag-root  { color: var(--accent); font-weight: 600; }
+    .dag-child { color: var(--success-text); }
+    .dag-leaf  { color: var(--purple); }
+    .dag-arrow { color: var(--text-subtle); }
+
+    /* ── Details / collapsible ── */
+    details {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 0.75rem;
+      overflow: hidden;
+    }
+
+    details[open] {
+      border-color: var(--accent-dim);
+    }
+
+    summary {
+      padding: 0.85rem 1.1rem;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.88rem;
+      color: #e6edf3;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      list-style: none;
+      user-select: none;
+      transition: background 0.1s;
+    }
+
+    summary::-webkit-details-marker { display: none; }
+
+    summary:hover { background: var(--bg-tertiary); }
+
+    summary::before {
+      content: '▶';
+      font-size: 0.6rem;
+      color: var(--accent);
+      transition: transform 0.2s;
+      display: inline-block;
+    }
+
+    details[open] > summary::before {
+      transform: rotate(90deg);
+    }
+
+    .details-body {
+      padding: 0 1.25rem 1.25rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .details-body p:first-child { margin-top: 0.85rem; }
+
+    /* ── Level cards ── */
+    .level-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1rem;
+      position: relative;
+    }
+
+    .level-card::before {
+      content: attr(data-level);
+      position: absolute;
+      top: 1rem;
+      right: 1.25rem;
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+      background: var(--bg-tertiary);
+      padding: 0.2rem 0.5rem;
+      border-radius: 3px;
+    }
+
+    .level-card h3 {
+      margin-top: 0;
+      color: var(--accent);
+      font-size: 1.05rem;
+    }
+
+    .level-card .level-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin: 0.5rem 0 0.85rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.67rem;
+      padding: 0.2rem 0.55rem;
+      border-radius: 20px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+
+    .badge-blue   { background: rgba(88,166,255,0.12); color: var(--accent); border: 1px solid rgba(88,166,255,0.25); }
+    .badge-green  { background: rgba(35,134,54,0.15);  color: var(--success-text); border: 1px solid rgba(63,185,80,0.25); }
+    .badge-red    { background: rgba(218,54,51,0.12);  color: var(--warning-text); border: 1px solid rgba(248,81,73,0.25); }
+    .badge-purple { background: rgba(188,140,255,0.12); color: var(--purple); border: 1px solid rgba(188,140,255,0.25); }
+    .badge-yellow { background: rgba(227,179,65,0.12); color: var(--warn-soft); border: 1px solid rgba(227,179,65,0.25); }
+
+    .exercise-box {
+      background: rgba(35,134,54,0.08);
+      border: 1px solid rgba(63,185,80,0.2);
+      border-radius: var(--radius);
+      padding: 0.85rem 1rem;
+      margin: 0.85rem 0;
+    }
+
+    .exercise-box .ex-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--success-text);
+      margin-bottom: 0.35rem;
+    }
+
+    .antipattern-box {
+      background: rgba(218,54,51,0.07);
+      border: 1px solid rgba(248,81,73,0.2);
+      border-radius: var(--radius);
+      padding: 0.85rem 1rem;
+      margin: 0.5rem 0;
+    }
+
+    .antipattern-box .ap-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--warning-text);
+      margin-bottom: 0.35rem;
+    }
+
+    .ref-box {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.7rem;
+      color: var(--purple);
+      background: rgba(188,140,255,0.08);
+      border: 1px solid rgba(188,140,255,0.2);
+      border-radius: 3px;
+      padding: 0.2rem 0.55rem;
+      margin-top: 0.4rem;
+    }
+
+    /* ── Step cards (first session script) ── */
+    .step-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .step-card {
+      display: grid;
+      grid-template-columns: 2.5rem 1fr;
+      gap: 1rem;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.1rem 1.25rem;
+      align-items: start;
+    }
+
+    .step-num {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2rem;
+      height: 2rem;
+      border-radius: 50%;
+      background: var(--accent-dim);
+      color: #e6edf3;
+      font-weight: 700;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+    }
+
+    .step-content h4 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #e6edf3;
+      margin-bottom: 0.3rem;
+    }
+
+    .step-content .step-cmd {
+      font-size: 0.75rem;
+      color: var(--success-text);
+      background: rgba(35,134,54,0.08);
+      border: 1px solid rgba(63,185,80,0.2);
+      border-radius: 3px;
+      padding: 0.2rem 0.55rem;
+      display: inline-block;
+      margin: 0.35rem 0;
+      font-family: var(--font-mono);
+    }
+
+    .step-content .why {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin: 0.35rem 0 0;
+    }
+
+    .step-content .why strong {
+      color: var(--warn-soft);
+    }
+
+    /* ── Hook table ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.78rem;
+      margin: 0.85rem 0 1.25rem;
+    }
+
+    th {
+      background: var(--bg-tertiary);
+      color: #e6edf3;
+      padding: 0.55rem 0.85rem;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 2px solid var(--border);
+      font-size: 0.72rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    td {
+      padding: 0.55rem 0.85rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      color: var(--text);
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    tr:hover td { background: rgba(88,166,255,0.03); }
+
+    td code { font-size: 0.74em; }
+
+    /* ── Callout boxes ── */
+    .callout {
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      margin: 1rem 0;
+      font-size: 0.84rem;
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .callout-icon {
+      flex-shrink: 0;
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+
+    .callout-info {
+      background: rgba(88,166,255,0.07);
+      border: 1px solid rgba(88,166,255,0.2);
+    }
+
+    .callout-warn {
+      background: rgba(218,54,51,0.07);
+      border: 1px solid rgba(218,54,51,0.25);
+    }
+
+    .callout-tip {
+      background: rgba(35,134,54,0.07);
+      border: 1px solid rgba(35,134,54,0.25);
+    }
+
+    /* ── Anti-pattern shame cards ── */
+    .shame-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .shame-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .shame-header {
+      background: rgba(218,54,51,0.1);
+      border-bottom: 1px solid rgba(218,54,51,0.2);
+      padding: 0.65rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .shame-num {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--warning-text);
+      background: rgba(218,54,51,0.2);
+      padding: 0.1rem 0.45rem;
+      border-radius: 3px;
+    }
+
+    .shame-title {
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: var(--warning-text);
+    }
+
+    .shame-body {
+      padding: 0.85rem 1rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .shame-col-label {
+      font-size: 0.63rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+      margin-bottom: 0.25rem;
+    }
+
+    .shame-col p {
+      font-size: 0.78rem;
+      margin: 0;
+      color: var(--text-muted);
+    }
+
+    .shame-col p.fix {
+      color: var(--success-text);
+    }
+
+    /* ── Footer ── */
+    footer {
+      margin-top: 4rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.75rem;
+      color: var(--text-subtle);
+      text-align: center;
+    }
+
+    footer p { color: var(--text-subtle); font-size: 0.75rem; }
+
+    footer a { color: var(--accent); }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-subtle); }
+
+    /* ── Print styles ── */
+    @media print {
+      nav.toc { display: none; }
+      body { display: block; }
+      main { padding: 1rem 2rem; max-width: none; }
+      details { display: block; }
+      details[open], details:not([open]) { border: 1px solid #ccc; }
+      summary::before { display: none; }
+      .details-body { display: block !important; }
+      pre { white-space: pre-wrap; word-break: break-all; }
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      body { flex-direction: column; }
+      nav.toc {
+        position: relative;
+        height: auto;
+        width: 100%;
+        min-width: unset;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
+      main { padding: 1.5rem 1.25rem 3rem; }
+      .shame-body { grid-template-columns: 1fr; gap: 0.5rem; }
+      .hero h1 { font-size: 1.5rem; }
+      .step-card { grid-template-columns: 1fr; }
+      .step-num { width: 1.6rem; height: 1.6rem; font-size: 0.75rem; }
+    }
+
+    @media (max-width: 600px) {
+      nav.toc { padding: 1rem 0; }
+      nav.toc h2 { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Sticky TOC Sidebar ── -->
+<nav class="toc" aria-label="Table of contents">
+  <h2>Contents</h2>
+  <ol>
+    <li class="toc-section"><a href="#mental-model">1 — Mental Model</a>
+      <ol class="toc-sub">
+        <li><a href="#dag-concept">DAG: work as a tree</a></li>
+        <li><a href="#sonnet-opus">Sonnet / Opus split</a></li>
+        <li><a href="#seeds">Seeds as memory</a></li>
+        <li><a href="#compilation-gate">Compilation gate</a></li>
+      </ol>
+    </li>
+    <li class="toc-section"><a href="#five-levels">2 — Five Levels</a>
+      <ol class="toc-sub">
+        <li><a href="#level0">Level 0 — Foundation</a></li>
+        <li><a href="#level1">Level 1 — Single Repo</a></li>
+        <li><a href="#level2">Level 2 — Multi-Agent</a></li>
+        <li><a href="#level3">Level 3 — Multi-Repo</a></li>
+        <li><a href="#level4">Level 4 — Governance</a></li>
+      </ol>
+    </li>
+    <li class="toc-section"><a href="#first-session">3 — First Session Script</a></li>
+    <li class="toc-section"><a href="#enforcement">4 — Mechanical Enforcement</a>
+      <ol class="toc-sub">
+        <li><a href="#hooks-lifecycle">Hook lifecycle</a></li>
+        <li><a href="#example-hook">Example hook</a></li>
+      </ol>
+    </li>
+    <li class="toc-section"><a href="#patterns">5 — Pattern Reference</a></li>
+    <li class="toc-section"><a href="#hall-of-shame">6 — Anti-Pattern Hall of Shame</a></li>
+  </ol>
+</nav>
+
+<!-- ── Main content ── -->
+<main>
+
+  <!-- Hero -->
+  <header class="hero" id="top">
+    <p class="hero-eyebrow">Claude Code &middot; Power User Curriculum</p>
+    <h1>Orchestration Mastery:<br>From Zero to Multi-Repo Infrastructure</h1>
+    <p class="subtitle">A progressive curriculum for Claude Code power users</p>
+    <div class="byline">Extracted from 208 sessions &middot; 432 hours &middot; 469 agent dispatches &mdash; April 2026</div>
+    <div class="stats">
+      <div class="stat">
+        <span class="stat-num">208</span>
+        <span class="stat-label">Sessions</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num">469</span>
+        <span class="stat-label">Agent dispatches</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num">89</span>
+        <span class="stat-label">Commits / 18 days</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num">5</span>
+        <span class="stat-label">Mastery levels</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ─────────────────────────────────────────
+       SECTION 1: MENTAL MODEL
+  ───────────────────────────────────────────── -->
+  <section id="mental-model">
+    <h2><span class="section-num">1</span> The Mental Model</h2>
+    <p class="section-desc">Before touching a tool, internalize four ideas. Everything else follows from these.</p>
+
+    <details open id="dag-concept">
+      <summary>Work as a DAG, not a task list</summary>
+      <div class="details-body">
+        <p>
+          Every non-trivial project is a directed acyclic graph of dependencies. A task list
+          is flat — a DAG is structural. The shape of the graph determines what can run in parallel
+          and what must wait. Most orchestration mistakes reduce to ignoring the graph.
+        </p>
+        <p>Example DAG from a real 18-day sprint:</p>
+<pre><code><span class="dag-root">Gateway Wave 1 (foundation)</span>
+<span class="dag-arrow">├──</span> <span class="dag-child">Wave 2A (middleware)</span>  <span class="dag-arrow">←── parallel with ──→</span>  <span class="dag-child">VPS Deploy</span>
+<span class="dag-arrow">│   ├──</span> <span class="dag-child">Wave 2B (persistence)</span>                     <span class="dag-arrow">│</span>
+<span class="dag-arrow">│   └──</span> <span class="dag-child">Wave 2C (RAG pipeline)</span>                    <span class="dag-arrow">│</span>
+<span class="dag-arrow">│                                                  ↓</span>
+<span class="dag-arrow">└──────────────────────────────</span> <span class="dag-leaf">Atlas Commission ──┘</span>
+                                     <span class="dag-arrow">│</span>
+                                     <span class="dag-arrow">↓</span>
+                              <span class="dag-leaf">PDI Data Pipeline</span>
+                                     <span class="dag-arrow">│</span>
+                                     <span class="dag-arrow">↓</span>
+                            <span class="dag-leaf">Ecosystem Convergence</span></code></pre>
+        <p>
+          Wave 2A and VPS Deploy have no dependency on each other — they can run in parallel agents simultaneously.
+          Atlas Commission depends on <em>both</em> completing. This distinction — which things block which — is the core decision in every dispatch.
+        </p>
+        <div class="callout callout-info">
+          <span class="callout-icon">&#9432;</span>
+          <span>Rule: identify blocking relationships first. Then dispatch everything that has no unmet dependency.</span>
+        </div>
+      </div>
+    </details>
+
+    <details id="sonnet-opus">
+      <summary>The Sonnet / Opus split — 80 / 20</summary>
+      <div class="details-body">
+        <p>
+          Not every task deserves the same model. Routing is a first-class decision.
+        </p>
+        <table>
+          <thead>
+            <tr><th>Sonnet (80%)</th><th>Opus (20%)</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Parsing, templating, bulk normalization</td>
+              <td>Architecture decisions, synthesis</td>
+            </tr>
+            <tr>
+              <td>Implementation tracks from a spec</td>
+              <td>Convergence gates and trajectory evaluation</td>
+            </tr>
+            <tr>
+              <td>Audit sweeps, skill upgrades</td>
+              <td>Cross-repo strategy sessions</td>
+            </tr>
+            <tr>
+              <td>Test generation, code review</td>
+              <td>Decisions that fork the product direction</td>
+            </tr>
+            <tr>
+              <td>Data pipeline scripts</td>
+              <td>When Sonnet has failed twice on the same task</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="callout callout-tip">
+          <span class="callout-icon">&#10003;</span>
+          <span>Codify the split in your SKILL.md frontmatter: <code>model: sonnet</code> or <code>model: opus</code>. Default to Sonnet. Escalate deliberately.</span>
+        </div>
+      </div>
+    </details>
+
+    <details id="seeds">
+      <summary>Seeds as organizational memory</summary>
+      <div class="details-body">
+        <p>
+          A <strong>seed</strong> is a compressed pattern extracted from friction. The lifecycle:
+        </p>
+<pre><code><span class="cmt"># Lifecycle of a seed</span>
+<span class="kw">Friction</span>   <span class="dag-arrow">→</span>  you hit the same mistake twice
+<span class="kw">Pattern</span>    <span class="dag-arrow">→</span>  you name the root cause and the fix
+<span class="kw">Seed</span>       <span class="dag-arrow">→</span>  you write it as a portable lesson (200 chars max headline)
+<span class="kw">Skill</span>      <span class="dag-arrow">→</span>  optional: automate the fix as a reusable skill command
+
+<span class="cmt"># Target: 60%+ friction-to-seed extraction rate</span>
+<span class="cmt"># Every seed prevents the same mistake in every future session</span></code></pre>
+        <p>
+          Seeds are stored in <code>~/.claude/projects/memory/</code>, indexed in <code>MEMORY.md</code>.
+          Sub-agents start cold — they do NOT inherit your session context. Seeds bridge that gap.
+        </p>
+        <div class="callout callout-info">
+          <span class="callout-icon">&#9432;</span>
+          <span>The question after every friction event: "Is this worth a seed?" If you had to look it up or figure it out again, the answer is yes.</span>
+        </div>
+      </div>
+    </details>
+
+    <details id="compilation-gate">
+      <summary>The compilation gate — mechanical trust, not aspirational compliance</summary>
+      <div class="details-body">
+        <p>
+          Policies without enforcement drift to 0% compliance. Every best practice
+          you write in a doc and never verify has an effective compliance rate of zero.
+        </p>
+        <p>
+          The compilation gate is the antidote: before any commit, before marking any task done,
+          the build must pass. This is not a suggestion — it is a hook in <code>settings.json</code>
+          that blocks the action.
+        </p>
+<pre><code><span class="cmt"># Go stack</span>
+<span class="fn">go</span> <span class="str">build ./...</span>   <span class="cmt"># must be clean</span>
+<span class="fn">go</span> <span class="str">test ./...</span>    <span class="cmt"># must pass</span>
+
+<span class="cmt"># Rust stack</span>
+<span class="fn">cargo</span> <span class="str">check</span>     <span class="cmt"># type-checks without full compile</span>
+<span class="fn">cargo</span> <span class="str">test</span>      <span class="cmt"># full suite</span>
+
+<span class="cmt"># TypeScript / Svelte 5</span>
+<span class="fn">tsc</span> <span class="str">--noEmit</span>    <span class="cmt"># type-check only</span>
+<span class="fn">npx</span> <span class="str">svelte-check</span></code></pre>
+        <p>
+          For parallel agent tracks: every agent must pass its own compilation gate before the
+          main thread integrates. No exceptions. One broken track poisons the merge.
+        </p>
+        <div class="callout callout-warn">
+          <span class="callout-icon">&#9888;</span>
+          <span><strong>Never skip</strong> — <code>--no-verify</code> and <code>--no-gpg-sign</code> are off-limits unless the user explicitly requests it.</span>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ─────────────────────────────────────────
+       SECTION 2: FIVE LEVELS
+  ───────────────────────────────────────────── -->
+  <section id="five-levels">
+    <h2><span class="section-num">2</span> The Five Levels</h2>
+    <p class="section-desc">Each level unlocks a new leverage multiplier. Master each before climbing.</p>
+
+    <!-- Level 0 -->
+    <details open id="level0">
+      <summary>Level 0 &mdash; Foundation</summary>
+      <div class="details-body">
+        <div class="level-card" data-level="Level 0">
+          <h3>Foundation: Infrastructure Before Work</h3>
+          <div class="level-meta">
+            <span class="badge badge-blue">CLAUDE.md</span>
+            <span class="badge badge-blue">TodoWrite</span>
+            <span class="badge badge-blue">Root-cause debugging</span>
+            <span class="badge badge-blue">Build gate</span>
+          </div>
+          <p>
+            <strong>CLAUDE.md is your constitution.</strong> It is the first file read in every session.
+            It encodes: language defaults, frontend conventions, debugging protocol, architecture patterns,
+            and project references. If it's wrong or stale, every session builds on a broken foundation.
+          </p>
+          <p>
+            <strong>TodoWrite</strong> gives granular, session-visible tracking. One todo per deliverable —
+            not per area. "Fix auth bug" is an area. "Fix missing JWT expiry check in middleware/auth.go:47"
+            is a deliverable.
+          </p>
+          <p>
+            <strong>Root-cause debugging protocol:</strong> before writing any fix, trace to the originating
+            line. Check config files first (settings.json, .env, wrangler.toml) before debugging code.
+            At least 3 sessions per operator have been wasted debugging code when the problem was a stale URL.
+          </p>
+
+          <div class="exercise-box">
+            <div class="ex-label">Exercise</div>
+            <p>Create or audit your CLAUDE.md. Run your full build suite from scratch. Verify it passes clean before doing any other work in the repo.</p>
+          </div>
+
+          <div class="antipattern-box">
+            <div class="ap-label">Anti-pattern</div>
+            <p>"Write once, never update" — CLAUDE.md written at repo creation and never touched again. A stale constitution is worse than none: it actively misdirects agents.</p>
+          </div>
+
+          <div class="ref-box">&#128196; Key command: <code>go build ./...</code> (or stack equivalent)</div>
+        </div>
+      </div>
+    </details>
+
+    <!-- Level 1 -->
+    <details id="level1">
+      <summary>Level 1 &mdash; Single-Repo Mastery</summary>
+      <div class="details-body">
+        <div class="level-card" data-level="Level 1">
+          <h3>Single-Repo Mastery: Clean Solo Work</h3>
+          <div class="level-meta">
+            <span class="badge badge-green">Compilation gate</span>
+            <span class="badge badge-green">One todo per deliverable</span>
+            <span class="badge badge-green">Seed extraction habit</span>
+          </div>
+          <p>
+            At Level 1, every change follows a gate: implement → build → test → commit.
+            No exceptions. The discipline here is the foundation for parallel work later —
+            you cannot reliably split work you cannot reliably finish alone.
+          </p>
+          <p>
+            <strong>Seed extraction habit:</strong> after every session where you hit friction,
+            write one seed. Keep a running extraction rate. Target 60%+. Low extraction rate
+            means you're paying the same cost repeatedly across sessions.
+          </p>
+
+          <div class="exercise-box">
+            <div class="ex-label">Exercise</div>
+            <p>Find a failing test suite. Create one todo per failing test. Fix each in order. Verify the full suite passes before marking any done. Extract one seed from whatever slowed you down.</p>
+          </div>
+
+          <div class="antipattern-box">
+            <div class="ap-label">Anti-pattern</div>
+            <p>Marking a task done before the full test suite passes. "It works for the case I tested" is not done. Full suite, no exceptions.</p>
+          </div>
+
+          <div class="ref-box">&#128196; Reference: <code>seed_compilation_as_contract</code></div>
+        </div>
+      </div>
+    </details>
+
+    <!-- Level 2 -->
+    <details id="level2">
+      <summary>Level 2 &mdash; Multi-Agent Dispatch</summary>
+      <div class="details-body">
+        <div class="level-card" data-level="Level 2">
+          <h3>Multi-Agent Dispatch: Parallel Execution</h3>
+          <div class="level-meta">
+            <span class="badge badge-purple">Plan → Dispatch → Verify → Resolve → Report</span>
+            <span class="badge badge-purple">File manifests</span>
+            <span class="badge badge-purple">False completion trap</span>
+          </div>
+          <p>
+            The dispatch cycle has five phases. Skipping any one causes the failure mode named after it:
+          </p>
+<pre><code><span class="kw">1. Plan</span>     — identify files; assign non-overlapping manifests per agent
+<span class="kw">2. Dispatch</span> — run agents in parallel, each with explicit file manifest
+<span class="kw">3. Verify</span>   — run <span class="fn">git status</span> + <span class="fn">grep</span> for expected changes (never trust self-reports)
+<span class="kw">4. Resolve</span>  — fix conflicts, failed builds, missed writes
+<span class="kw">5. Report</span>   — final <span class="fn">go build ./...</span> + <span class="fn">go test ./...</span> before closing task</code></pre>
+          <p>
+            <strong>File manifests</strong> prevent merge conflicts at zero cost. Each agent gets an explicit
+            list of files it may write. No file appears in two manifests. This is the zero-overlap guarantee.
+          </p>
+          <p>
+            <strong>Agent false completion:</strong> agents report "complete" without persisting writes.
+            Always verify with <code>git status</code> and <code>grep</code> for expected output. Agent "done"
+            is not done until independently verified.
+          </p>
+          <div class="callout callout-warn">
+            <span class="callout-icon">&#9888;</span>
+            <span>Never use <code>isolation: "worktree"</code> for agents that write files. The worktree is auto-cleaned and all writes are silently discarded.</span>
+          </div>
+
+          <div class="exercise-box">
+            <div class="ex-label">Exercise</div>
+            <p>Pick a structural change touching 5+ files. Write explicit file manifests for 3 parallel agents. Dispatch them. Run a verification sweep on each agent's output independently. Fix anything that didn't land.</p>
+          </div>
+
+          <div class="antipattern-box">
+            <div class="ap-label">Anti-pattern</div>
+            <p>Dispatching without file manifests (overlap causes merge conflicts) or trusting agent self-reports (silent write failure is common).</p>
+          </div>
+
+          <div class="ref-box">&#128196; Reference: <code>parallel-dispatch</code> skill &middot; <code>seed_zero_overlap_agent_swarm</code></div>
+        </div>
+      </div>
+    </details>
+
+    <!-- Level 3 -->
+    <details id="level3">
+      <summary>Level 3 &mdash; Multi-Repo Orchestration</summary>
+      <div class="details-body">
+        <div class="level-card" data-level="Level 3">
+          <h3>Multi-Repo Orchestration: Cross-Boundary Dependency</h3>
+          <div class="level-meta">
+            <span class="badge badge-yellow">DAG sequencing</span>
+            <span class="badge badge-yellow">Interface contracts first</span>
+            <span class="badge badge-yellow">Cross-repo gates</span>
+            <span class="badge badge-yellow">Convergence gate</span>
+          </div>
+          <p>
+            At Level 3, dependencies span repositories. The same DAG thinking applies, but now
+            "build Wave 2A before Wave 2B" means the <em>provider repo</em> must have stable interfaces
+            before the <em>consumer repo</em> can start.
+          </p>
+          <p>
+            <strong>Interface contracts before implementation</strong> is the rule. Define the API surface
+            (types, endpoints, function signatures) in a shared contract before any agent writes code against it.
+            Without a contract, consumer work is written against a moving target.
+          </p>
+          <p>
+            <strong>Convergence gate every 3–4 sessions.</strong> After 4 sessions of parallel work,
+            accumulated drift — stale references, version mismatches, undiscovered gaps — exceeds the cost
+            of a convergence pass. Run one. YELLOW signal: 10+ dirty files or 4+ sessions without a gate.
+          </p>
+<pre><code><span class="cmt"># Convergence gate checklist</span>
+<span class="fn">go build ./...</span>          <span class="cmt"># every sub-repo</span>
+<span class="fn">go test ./...</span>           <span class="cmt"># every sub-repo</span>
+<span class="fn">git status</span>              <span class="cmt"># no untracked noise</span>
+<span class="fn">grep</span> <span class="str">-r "TODO\|FIXME\|HACK"</span> <span class="cmt"># triage leftovers</span>
+<span class="cmt"># cross-repo: verify shared interface versions match</span></code></pre>
+
+          <div class="exercise-box">
+            <div class="ex-label">Exercise</div>
+            <p>Take two repos (API + client). Define the interface contract first (endpoint list + types). Then dispatch parallel agents — one per repo — to implement against the contract. Run cross-repo integration tests. Perform a convergence pass.</p>
+          </div>
+
+          <div class="antipattern-box">
+            <div class="ap-label">Anti-pattern</div>
+            <p>Building the consumer before the provider interface is stable. Every consumer line written against an unstable provider is technical debt that arrives as a build failure at integration time.</p>
+          </div>
+
+          <div class="ref-box">&#128196; Reference: <code>parallel-tracks</code> skill &middot; <code>seed_convergence_gate</code></div>
+        </div>
+      </div>
+    </details>
+
+    <!-- Level 4 -->
+    <details id="level4">
+      <summary>Level 4 &mdash; Ecosystem Governance</summary>
+      <div class="details-body">
+        <div class="level-card" data-level="Level 4">
+          <h3>Ecosystem Governance: The Long Game</h3>
+          <div class="level-meta">
+            <span class="badge badge-red">Seeds as institutional memory</span>
+            <span class="badge badge-red">Tiered authority</span>
+            <span class="badge badge-red">Scheduled maintenance</span>
+            <span class="badge badge-red">Friction-to-seed 60%+</span>
+          </div>
+          <p>
+            Level 4 is about the infrastructure that outlasts any individual session. Skills, seeds,
+            and governance structures that make every future session faster than the last.
+          </p>
+          <p>
+            <strong>Tiered authority:</strong> canonical (source of truth) &gt; distribution (curated copy)
+            &gt; community (user-submitted). Every skill, seed, and config lives at exactly one canonical location.
+            Distribution copies are managed, not edited. Community contributions are audited before promotion.
+          </p>
+          <p>
+            <strong>Scheduled maintenance:</strong> convergence gates, supply chain syncs, freshness checks.
+            These are not optional. They run on a cron. Governance without scheduling is governance in theory only.
+          </p>
+<pre><code><span class="cmt"># Scheduled maintenance (examples)</span>
+<span class="var">midday-memory-tending</span>    <span class="str">MWF 2:17pm</span>     <span class="cmt"># compress + index seeds</span>
+<span class="var">weekly-supply-chain-sync</span> <span class="str">Sun 10:42am</span>    <span class="cmt"># audit canonical vs distribution</span>
+<span class="var">cwd-data-freshness-check</span> <span class="str">Wed 11:23am</span>    <span class="cmt"># verify data pipeline freshness</span></code></pre>
+
+          <div class="exercise-box">
+            <div class="ex-label">Exercise</div>
+            <p>Audit 5 repos against their canonical versions. Create a convergence ledger. Extract one cross-repo seed from the friction you find. Set up at least one scheduled maintenance task.</p>
+          </div>
+
+          <div class="antipattern-box">
+            <div class="ap-label">Anti-pattern</div>
+            <p>Treating governance as optional — "I'll write the seeds later," "I'll do a convergence pass when things slow down." Things never slow down. Governance that isn't scheduled doesn't happen.</p>
+          </div>
+
+          <div class="ref-box">&#128196; Reference: <code>seed_tiered_skill_authority</code> &middot; <code>seed_audit_before_sync</code></div>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ─────────────────────────────────────────
+       SECTION 3: FIRST SESSION SCRIPT
+  ───────────────────────────────────────────── -->
+  <section id="first-session">
+    <h2><span class="section-num">3</span> First Session Script</h2>
+    <p class="section-desc">Eight steps. Do them in this order. The order is load-bearing.</p>
+
+    <div class="step-grid">
+
+      <div class="step-card">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>Read or create CLAUDE.md</h4>
+          <span class="step-cmd">cat CLAUDE.md  # or create from scratch</span>
+          <p class="why"><strong>Why:</strong> this is your agent's instruction set. Every agent in this session — including the ones you dispatch — starts cold and reads this file. If it's missing or stale, you're orchestrating with faulty instructions from the first tool call.</p>
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>Run the full build and test suite</h4>
+          <span class="step-cmd">go build ./... &amp;&amp; go test ./...</span>
+          <p class="why"><strong>Why:</strong> you need a known-good baseline. Any existing failures are not yours — but if you skip this step, you will eventually claim credit for fixing something you didn't break and get blamed for something you didn't introduce.</p>
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>Pick a 3–5 file task</h4>
+          <span class="step-cmd">git log --oneline -10  # understand what's happened recently</span>
+          <p class="why"><strong>Why:</strong> 3–5 files is the sweet spot for learning dispatch. Small enough to complete in one session. Large enough to be worth splitting into parallel agents. One file is too small; ten files is too large to verify cleanly on your first try.</p>
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h4>Write a TodoWrite plan</h4>
+          <span class="step-cmd"># One todo per file, not per "area"</span>
+          <p class="why"><strong>Why:</strong> TodoWrite creates session-visible tracking. One todo per concrete deliverable forces you to decompose the task before touching code. The plan also becomes the file manifest for your agents in step 6.</p>
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <h4>Complete the task yourself first</h4>
+          <span class="step-cmd">go build ./... &amp;&amp; go test ./...  # after each file</span>
+          <p class="why"><strong>Why:</strong> you cannot write a good agent dispatch prompt for work you don't understand. Do the task once. Note where you hit friction. This knowledge goes into the dispatch prompt and, later, into a seed.</p>
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-num">6</div>
+        <div class="step-content">
+          <h4>Reset and redo with 2–3 parallel agents</h4>
+          <span class="step-cmd">git stash  # reset to baseline; dispatch agents with file manifests</span>
+          <p class="why"><strong>Why:</strong> this is where you learn whether your plan was good enough. Agents will expose ambiguities in your spec. Run the verification sweep (step 3 of the dispatch cycle) independently on each agent's output. Don't trust self-reports.</p>
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-num">7</div>
+        <div class="step-content">
+          <h4>Write one seed</h4>
+          <span class="step-cmd"># seed_[descriptive-name].md in ~/.claude/projects/memory/</span>
+          <p class="why"><strong>Why:</strong> every session should leave the system smarter. The seed you write tonight prevents the same friction in every future session. Aim for 200 chars headline max. Update MEMORY.md index. Sub-agents in future sessions will have this knowledge.</p>
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-num">8</div>
+        <div class="step-content">
+          <h4>Commit with a conventional prefix</h4>
+          <span class="step-cmd">git commit -m "feat: ..." # or fix: / chore: / docs:</span>
+          <p class="why"><strong>Why:</strong> conventional commits make the log machine-readable. They also force you to classify the work — is this a feature, a fix, or maintenance? That classification affects whether it goes in a release note and how agents interpret recent history.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────
+       SECTION 4: MECHANICAL ENFORCEMENT
+  ───────────────────────────────────────────── -->
+  <section id="enforcement">
+    <h2><span class="section-num">4</span> Mechanical Enforcement</h2>
+    <p class="section-desc">Policies without hooks have a compliance rate of zero. These hooks make the levels self-enforcing.</p>
+
+    <div id="hooks-lifecycle">
+      <h3>Hook Lifecycle</h3>
+      <p>
+        Claude Code hooks run at defined lifecycle points. The critical distinction:
+        <strong>PreToolUse blocks</strong> (exit 2 prevents the action),
+        <strong>PostToolUse informs</strong> (the write already happened, exit 2 has no blocking effect).
+      </p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Hook Event</th>
+            <th>Fires When</th>
+            <th>Can Block?</th>
+            <th>Use For</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>PreToolUse</code></td>
+            <td>Before any tool call runs</td>
+            <td><span class="badge badge-green">Yes (exit 2)</span></td>
+            <td>destructive-guard, force-push-guard, pre-commit build gate</td>
+          </tr>
+          <tr>
+            <td><code>PostToolUse</code></td>
+            <td>After tool call completes</td>
+            <td><span class="badge badge-red">No</span></td>
+            <td>go-build-check, go-test-check, svelte5-lint, rust-check, ts-check, skill-validate</td>
+          </tr>
+          <tr>
+            <td><code>UserPromptSubmit</code></td>
+            <td>Before processing user message</td>
+            <td><span class="badge badge-green">Yes (exit 2)</span></td>
+            <td>context-inject (load seeds/MEMORY.md), drift-detector (convergence signal)</td>
+          </tr>
+          <tr>
+            <td><code>Notification</code></td>
+            <td>On agent events, completions</td>
+            <td><span class="badge badge-red">No</span></td>
+            <td>alerting, logging to SQLite, dashboard updates</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-warn">
+        <span class="callout-icon">&#9888;</span>
+        <span>PostToolUse fires AFTER the write is already on disk. To prevent a bad write, you must use PreToolUse. PostToolUse is only for reporting and side-effects after the fact.</span>
+      </div>
+    </div>
+
+    <div id="example-hook">
+      <h3>Example: Pre-Commit Build Gate</h3>
+      <p>This hook fires on every <code>Bash</code> tool call and blocks <code>git commit</code> if the build is not clean:</p>
+
+<pre><code><span class="cmt">#!/usr/bin/env bash</span>
+<span class="cmt"># ~/.claude/hooks/pre-commit-build-gate.sh</span>
+<span class="cmt"># Registered as: PreToolUse — Bash</span>
+
+<span class="cmt"># Only act on git commit calls</span>
+<span class="kw">if</span> <span class="op">!</span> <span class="fn">echo</span> <span class="str">"$CLAUDE_TOOL_INPUT"</span> | <span class="fn">grep</span> <span class="str">-q "git commit"</span>; <span class="kw">then</span>
+  <span class="kw">exit</span> <span class="num">0</span>
+<span class="kw">fi</span>
+
+<span class="cmt"># Find go.mod root and run build</span>
+<span class="var">ROOT</span>=<span class="str">"$(git rev-parse --show-toplevel 2>/dev/null)"</span>
+<span class="kw">if</span> <span class="op">[</span> -f <span class="str">"$ROOT/go.mod"</span> <span class="op">]</span>; <span class="kw">then</span>
+  <span class="kw">if</span> <span class="op">!</span> <span class="fn">go</span> <span class="str">build</span> -C <span class="str">"$ROOT"</span> ./... <span class="num">2</span>&amp;<span class="num">1</span>; <span class="kw">then</span>
+    <span class="fn">echo</span> <span class="str">"[BLOCKED] go build failed — fix before committing"</span> &gt;&amp;<span class="num">2</span>
+    <span class="kw">exit</span> <span class="num">2</span>   <span class="cmt"># exit 2 blocks the commit</span>
+  <span class="kw">fi</span>
+<span class="kw">fi</span>
+
+<span class="kw">exit</span> <span class="num">0</span></code></pre>
+
+      <p>Register in <code>~/.claude/settings.json</code>:</p>
+<pre><code><span class="op">{</span>
+  <span class="str">"hooks"</span><span class="op">:</span> <span class="op">{</span>
+    <span class="str">"PreToolUse"</span><span class="op">:</span> <span class="op">[</span>
+      <span class="op">{</span>
+        <span class="str">"matcher"</span><span class="op">:</span> <span class="str">"Bash"</span><span class="op">,</span>
+        <span class="str">"hooks"</span><span class="op">:</span> <span class="op">[{</span>
+          <span class="str">"type"</span><span class="op">:</span> <span class="str">"command"</span><span class="op">,</span>
+          <span class="str">"command"</span><span class="op">:</span> <span class="str">"~/.claude/hooks/pre-commit-build-gate.sh"</span>
+        <span class="op">}]</span>
+      <span class="op">}</span>
+    <span class="op">]</span>
+  <span class="op">}</span>
+<span class="op">}</span></code></pre>
+
+      <div class="callout callout-tip">
+        <span class="callout-icon">&#10003;</span>
+        <span>The drift detector runs on <code>UserPromptSubmit</code>: it counts dirty files and session count, then emits YELLOW or RED to signal when a convergence gate is overdue.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────
+       SECTION 5: PATTERN REFERENCE
+  ───────────────────────────────────────────── -->
+  <section id="patterns">
+    <h2><span class="section-num">5</span> Pattern Reference</h2>
+    <p class="section-desc">Twelve orchestration patterns. Each has a topology, a trigger condition, and a typical agent count.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Pattern</th>
+          <th>Topology</th>
+          <th>When to Use</th>
+          <th>Agents</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Pipeline</strong></td>
+          <td>A → B → C → D</td>
+          <td>Sequential data transformation where each stage produces input for the next</td>
+          <td>1/stage</td>
+        </tr>
+        <tr>
+          <td><strong>Map-Reduce</strong></td>
+          <td>1 → N (map) → 1 (reduce)</td>
+          <td>Same operation applied to many independent items, results aggregated</td>
+          <td>N+1</td>
+        </tr>
+        <tr>
+          <td><strong>Hierarchical</strong></td>
+          <td>Orchestrator → sub-agents → leaf workers</td>
+          <td>Large specs decomposed by domain, each domain has its own agent tree</td>
+          <td>3–20</td>
+        </tr>
+        <tr>
+          <td><strong>Swarm</strong></td>
+          <td>N parallel peers, shared state</td>
+          <td>Many independent files needing the same transformation simultaneously</td>
+          <td>5–30</td>
+        </tr>
+        <tr>
+          <td><strong>Generator-Critic</strong></td>
+          <td>Generator → Critic → revise loop</td>
+          <td>Quality-sensitive output where first pass is insufficient (specs, copy, architecture)</td>
+          <td>2</td>
+        </tr>
+        <tr>
+          <td><strong>Adversarial</strong></td>
+          <td>Two agents with opposing goals</td>
+          <td>Security review, argument stress-testing, red-team scenarios</td>
+          <td>2</td>
+        </tr>
+        <tr>
+          <td><strong>Jury</strong></td>
+          <td>N independent agents → synthesizer</td>
+          <td>High-stakes decisions requiring independent perspectives before synthesis</td>
+          <td>3–7</td>
+        </tr>
+        <tr>
+          <td><strong>Blackboard</strong></td>
+          <td>Shared write surface, specialists read/write</td>
+          <td>Multi-domain problem where specialists contribute fragments that accumulate</td>
+          <td>3–10</td>
+        </tr>
+        <tr>
+          <td><strong>Chain-of-Responsibility</strong></td>
+          <td>Request passed until handled</td>
+          <td>Routing requests to the first capable handler; fallback chains</td>
+          <td>2–5</td>
+        </tr>
+        <tr>
+          <td><strong>Circuit-Breaker</strong></td>
+          <td>Monitored pipeline with trip condition</td>
+          <td>Long-running pipelines where a mid-stage failure should halt downstream work</td>
+          <td>1+monitor</td>
+        </tr>
+        <tr>
+          <td><strong>Event-Driven</strong></td>
+          <td>Event bus → multiple subscribers</td>
+          <td>Reactive workflows: file change triggers lint + test + deploy fan-out</td>
+          <td>N subscribers</td>
+        </tr>
+        <tr>
+          <td><strong>Meta-Pattern Selector</strong></td>
+          <td>Classifier → routes to appropriate pattern</td>
+          <td>When task type is unknown upfront; classifier determines which pattern to use</td>
+          <td>1+chosen</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">&#9432;</span>
+      <span>Most real tasks use Pattern Composition: a Hierarchical orchestrator dispatching Swarms within each domain, with a Generator-Critic pass on the final output. The catalog is a vocabulary, not a constraint.</span>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────
+       SECTION 6: ANTI-PATTERN HALL OF SHAME
+  ───────────────────────────────────────────── -->
+  <section id="hall-of-shame">
+    <h2><span class="section-num">6</span> Anti-Pattern Hall of Shame</h2>
+    <p class="section-desc">Ten mistakes. All documented from real sessions. All painful. All avoidable.</p>
+
+    <div class="shame-grid">
+
+      <div class="shame-card">
+        <div class="shame-header">
+          <span class="shame-num">#1</span>
+          <span class="shame-title">Worktree Isolation Trap</span>
+        </div>
+        <div class="shame-body">
+          <div class="shame-col">
+            <div class="shame-col-label">The mistake</div>
+            <p>Using <code>isolation: "worktree"</code> for agents that write implementation files</p>
+          </div>
+          <div class="shame-col">
+            <div class="shame-col-label">What happens</div>
+            <p>The worktree is auto-cleaned after the agent completes. All writes are silently discarded. Agent reports "done." Nothing changed in your repo.</p>
+          </div>
+          <div class="shame-col">
+            <div class="shame-col-label">The fix</div>
+            <p class="fix">Never use worktree isolation for implementation work. Use it only for read-only analysis. Verify with <code>git status</code> after every agent.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="shame-card">
+        <div class="shame-header">
+          <span class="shame-num">#2</span>
+          <span class="shame-title">Agent False Completion</span>
+        </div>
+        <div class="shame-body">
+          <div class="shame-col">
+            <div class="shame-col-label">The mistake</div>
+            <p>Trusting an agent's "I've completed the task" self-report without verification</p>
+          </div>
+          <div class="shame-col">
+            <div class="shame-col-label">What happens</div>
+            <p>Agent wrote to a temp path, forgot to save, or had a permission error. Files are unchanged. You proceed with integration on ghost work.</p>
+          </div>
+          <div class="shame-col">
+            <div class="shame-col-label">The fix</div>
+            <p class="fix">Always run <code>git status</code> + <code>grep</code> for expected output after every agent. Agent "done" is not done until independently verified.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="shame-card">
+        <div class="shame-header">
+          <span class="shame-num">#3</span>
+          <span class="shame-title">Shallow First-Pass Fixes</span>
+        </div>
+        <div class="shame-body">
+          <div class="shame-col">
+            <div class="shame-col-label">The mistake</div>
+            <p>Fixing the symptom (error message, failing assertion) without tracing to the root cause</p>
+          </div>
+          <div class="shame-col">
+            <div class="shame-col-label">What happens</div>
+            <p>The upstream condition that caused the symptom persists. The bug reappears in a different form, often 2–3 sessions later. The original fix is now part of the confusion.</p>
+          </div>
+          <div class="shame-col">
+            <div class="shame-col-label">The fix</div>
+            <p class="fix">Before writing any fix: identify the exact line/config where the problem originates. When a fix doesn't hold, ask "what upstream condition allows this state?"</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="shame-card">
+        <div class="shame-header">
+          <span class="shame-num">#4</span>
+          <span class="shame-title">Config-Before-Code Miss</span>
+        </div>
+        <div class="shame-body">
+          <div class="shame-col">
+            <div class="shame-col-label">The mistake</div>
+            <p>Debugging code when the problem is a stale URL, missing env key, or wrong port in config</p>
+          </div>
+          <div class="shame-col">
+            <div class="shame-col-label">What happens</div>
+            <p>3+ hours spent tracing code logic. Root cause: <code>settings.json</code> had the wrong port. <code>.env</code> had an expired key. <code>wrangler.toml</code> had a stale worker URL.</p>
+          </div>
+          <div class="shame-col">
+            <div class="shame-col-label">The fix</div>
+            <p class="fix">For any connectivity/provider error: check settings.json, .env, wrangler.toml, and config files BEFORE debugging code. This costs 2 minutes. The alternative costs hours.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="shame-card">
+        <div class="shame-header">
+          <span class="shame-num">#5</span>
+          <span class="shame-title">Aspirational Without Mechanical</span>
+        </div>
+        <div class="shame-body">
+          <div class="shame-col">
+            <div class="shame-col-label">The mistake</div>
+            <p>Writing a policy in CLAUDE.md or a doc with no enforcement hook</p>
+          </div>
+          <div class="shame-col">
+            <div class="shame-col-label">What happens</div>
+            <p>Compliance starts at 100% the day you write it, drifts to 0% over 3–4 sessions. Sub-agents never see it. The policy exists only in the markdown file.</p>
+          </div>
+          <div class="shame-col">
+            <div class="shame-col-label">The fix</div>
+            <p class="fix">Every behavioral constraint needs a hook. PreToolUse for blocking, PostToolUse for informing. If you can't hook it, it's a suggestion, not a policy.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="shame-card">
+        <div class="shame-header">
+          <span class="shame-num">#6</span>
+          <span class="shame-title">Dispatching Without a Plan</span>
+        </div>
+        <div class="shame-body">
+          <div class="shame-col">
+            <div class="shame-col-label">The mistake</div>
+            <p>Sending agents without file manifests or explicit scope boundaries</p>
+          </div>
+          <div class="shame-col">
+            <div class="shame-col-label">What happens</div>
+            <p>Two agents write to the same file. Merge conflict. Or agents overlap in scope, produce duplicate implementations, and you spend the verification phase resolving the chaos.</p>
+          </div>
+          <div class="shame-col">
+            <div class="shame-col-label">The fix</div>
+            <p class="fix">Every dispatch starts with a file manifest. One file, one agent. No overlap. The plan takes 10 minutes. The merge conflict resolution takes 2 hours.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="shame-card">
+        <div class="shame-header">
+          <span class="shame-num">#7</span>
+          <span class="shame-title">Building Consumer Before Provider Is Stable</span>
+        </div>
+        <div class="shame-body">
+          <div class="shame-col">
+            <div class="shame-col-label">The mistake</div>
+            <p>Starting client/consumer implementation before provider API surface is finalized</p>
+          </div>
+          <div class="shame-col">
+            <div class="shame-col-label">What happens</div>
+            <p>Provider changes its interface. Every consumer call site must be updated. The work done against the unstable interface is thrown away or becomes rework.</p>
+          </div>
+          <div class="shame-col">
+            <div class="shame-col-label">The fix</div>
+            <p class="fix">Define the interface contract (types, endpoint signatures) before dispatching any consumer agents. The contract is the blocking dependency. Consumer work starts after the contract is frozen.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="shame-card">
+        <div class="shame-header">
+          <span class="shame-num">#8</span>
+          <span class="shame-title">Marking Done Before Full Suite Passes</span>
+        </div>
+        <div class="shame-body">
+          <div class="shame-col">
+            <div class="shame-col-label">The mistake</div>
+            <p>"It works for the case I tested" — closing a task before running the full test suite</p>
+          </div>
+          <div class="shame-col">
+            <div class="shame-col-label">What happens</div>
+            <p>A regression in an adjacent test surfaces in the next session, attributed to your change. The real failure was not running the suite. The apparent failure is "something broke."</p>
+          </div>
+          <div class="shame-col">
+            <div class="shame-col-label">The fix</div>
+            <p class="fix">The task is not done until <code>go test ./...</code> (or equivalent) passes green. No exceptions. This is the compilation gate in practice.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="shame-card">
+        <div class="shame-header">
+          <span class="shame-num">#9</span>
+          <span class="shame-title">Skipping Convergence</span>
+        </div>
+        <div class="shame-body">
+          <div class="shame-col">
+            <div class="shame-col-label">The mistake</div>
+            <p>"I'll do a convergence pass when things slow down" — indefinitely deferring the gate</p>
+          </div>
+          <div class="shame-col">
+            <div class="shame-col-label">What happens</div>
+            <p>After 6+ sessions, accumulated drift (version mismatches, stale references, undiscovered gaps) exceeds the cost of a convergence pass by 5x. The "slow down" never comes.</p>
+          </div>
+          <div class="shame-col">
+            <div class="shame-col-label">The fix</div>
+            <p class="fix">Convergence gate every 3–4 sessions, scheduled, non-negotiable. The drift-detector hook signals YELLOW at 4 sessions, RED at 6.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="shame-card">
+        <div class="shame-header">
+          <span class="shame-num">#10</span>
+          <span class="shame-title">Trusting Self-Reports</span>
+        </div>
+        <div class="shame-body">
+          <div class="shame-col">
+            <div class="shame-col-label">The mistake</div>
+            <p>Accepting "all agents complete" as the final verification step after a parallel dispatch</p>
+          </div>
+          <div class="shame-col">
+            <div class="shame-col-label">What happens</div>
+            <p>One agent hit an edge case and silently wrote a partial result. The full-workspace build catches it. You shipped incomplete work from an integration that "passed."</p>
+          </div>
+          <div class="shame-col">
+            <div class="shame-col-label">The fix</div>
+            <p class="fix">After ALL agents report completion: run <code>go build ./...</code>, <code>go test ./...</code>, and grep for expected output files. Agent "done" is not done until independently verified.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <p>
+      Generated from 18 days of production orchestration &mdash;
+      89 commits &middot; 469 agent dispatches &middot; 6 active repos
+    </p>
+    <p style="margin-top: 0.5rem;">
+      Seeds indexed in
+      <a href="../CLAUDE.md">CLAUDE.md</a> &middot;
+      Skills available via
+      <a href="#"><code>/skill list</code></a> &middot;
+      Governance at
+      <a href="#"><code>DojoGenesis/plugins</code></a>
+    </p>
+    <p style="margin-top: 0.85rem; color: var(--text-subtle);">
+      Orchestration Mastery &mdash; ZenflowProjects &mdash; April 2026
+    </p>
+  </footer>
+
+</main>
+
+<script>
+  // Minimal smooth scroll polyfill for older browsers
+  document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
+    anchor.addEventListener('click', function(e) {
+      var target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Open details if target or parent is a details element
+        var details = target.closest('details') || target.querySelector('details');
+        if (details && !details.open) { details.open = true; }
+      }
+    });
+  });
+</script>
+
+</body>
+</html>

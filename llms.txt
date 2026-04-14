@@ -1,0 +1,55 @@
+# Orchestration Guide by DojoGenesis
+
+> A progressive curriculum for Claude Code orchestration mastery — from single-repo builds to multi-repo infrastructure.
+
+Extracted from 208 sessions, 432 hours, and 469 agent dispatches across 6 repositories over 18 days of production use (March-April 2026).
+
+## What this teaches
+
+Five-level progressive curriculum for learning to orchestrate infrastructure builds and multi-repo GitHub work using Claude Code:
+
+- **Level 0 — Foundation**: CLAUDE.md as project constitution, TodoWrite for tracking, root-cause debugging
+- **Level 1 — Single-Repo Mastery**: Compilation gates, granular visibility, seed extraction
+- **Level 2 — Multi-Agent Dispatch**: Parallel dispatch lifecycle, file manifests, agent verification
+- **Level 3 — Multi-Repo Orchestration**: DAG sequencing, interface contracts, convergence gates
+- **Level 4 — Ecosystem Governance**: Seeds as memory, tiered authority, scheduled maintenance
+
+## Key concepts
+
+- **Directed Acyclic Graph (DAG) of deliverables**: Sequence work by dependency depth, not urgency
+- **Compilation Gate**: Mechanical trust boundary — `go build ./...` is the only agent whose word you trust
+- **Zero-Overlap File Manifests**: Each agent owns explicit files, no two agents touch the same file
+- **Convergence Gate**: Every 3-4 sessions, stop building and verify (drift detection, ledger reset)
+- **Friction-to-Seed Pipeline**: Every debugging session should extract at least one reusable pattern
+- **Sonnet/Opus Split**: 80% Sonnet (execution) / 20% Opus (architecture + synthesis)
+
+## 12 orchestration patterns
+
+Pipeline, Map-Reduce, Hierarchical, Swarm, Generator-Critic, Adversarial, Jury, Blackboard, Chain-of-Responsibility, Circuit-Breaker, Event-Driven, Meta-Pattern Selector
+
+## First session script
+
+8 steps for a new user's first orchestration session:
+1. Read/create CLAUDE.md
+2. Run build + test suite
+3. Pick a 3-5 file task
+4. Write TodoWrite plan
+5. Complete it yourself first
+6. Reset and redo with 2-3 agents
+7. Write one seed
+8. Commit with conventional prefix
+
+## Mechanical enforcement
+
+Hooks infrastructure (PreToolUse blocks, PostToolUse informs):
+- destructive-guard, force-push-guard, pre-commit-build-gate (blocking)
+- go-build-check, go-vet-check, go-test-check, svelte5-lint, rust-check, ts-check, skill-validate (informational)
+- milestone-gate: blocks `git tag` unless full test suite passes
+- agent-model-enforce: warns on agent dispatch without explicit model parameter
+- drift-detector: YELLOW/RED signals based on uncommitted files and sessions since convergence
+
+## Related resources
+
+- [DojoGenesis/plugins](https://github.com/DojoGenesis/plugins) — 83 first-party skills across 8 plugins
+- [DojoGenesis/cli](https://github.com/DojoGenesis/cli) — Dojo CLI with skill management and CAS bridge
+- [DojoGenesis/gateway](https://github.com/DojoGenesis/gateway) — Agentic Gateway with DAG workflow engine
